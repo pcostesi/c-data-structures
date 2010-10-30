@@ -35,9 +35,6 @@
 #define __BSTC 1
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
 #include "bst.h"
 
 
@@ -64,7 +61,7 @@ void swapData(node * target, node * source);
 
 
 /* Hashing reduces memory footprint
- * This is good enough for a proof of concept 
+ * This is good enough for a proof of concept
  * (See K&R @ Chapter 6) */
 static hashkey
 hash(char * k)
@@ -88,11 +85,11 @@ Node(char * key, void * val, size_t size)
     node *n = NULL;
     hashkey h = hash(key);
     void * mem = malloc(size);
-    
+
     if (mem == NULL) return NULL;
-    
+
     n = malloc(sizeof(struct Node));
-    
+
     if (n == NULL){
         free(mem);
     } else {
@@ -115,7 +112,7 @@ insert(node *parent, node *n)
         return parent;
     }
     return n;
-    
+
 }
 
 node *
@@ -174,10 +171,10 @@ node *maximum(node *root){
 static node *
 minormax(node *root, int i)
 {
-    node *child;
-    if (root != NULL){
-        child = (i == BST_RIGHT) ? root->right : root->left;
-        root = minormax(child, i);
+    node *aux = root;
+    while (aux != NULL){
+        aux = (i == BST_RIGHT) ? aux->right : aux->left;
+        root = (aux == NULL) ? root : aux;
     }
     return root;
 }
@@ -238,7 +235,7 @@ int
 getContent(node *n, void * d, size_t * s)
 {
     if (n != NULL && d != NULL){
-        *s = n->size > *s ? n->size : *s;
+        *s = n->size < *s ? n->size : *s;
         memcpy(d, n->val, *s);
         return 1;
     }

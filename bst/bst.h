@@ -35,6 +35,8 @@
 #ifndef __BSTH
 #define __BSTH 1
 #include <limits.h>
+#include <stdlib.h>
+#include <string.h>
 
 typedef struct Node node;
 
