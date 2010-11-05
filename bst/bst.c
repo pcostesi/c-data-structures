@@ -40,6 +40,8 @@
 
 #define BST_LEFT 1
 #define BST_RIGHT 0
+#define SET 0
+#define ADD 1
 
 typedef unsigned long int hashkey;
 
@@ -56,13 +58,15 @@ static hashkey hash(char * k);
 static node * Node(char * key, void * val, size_t size);
 static node * insert(node * root, node * n);
 static node * minormax(node * root, int i);
-static node * del(node *root, node * n);
+static node * _delete(node *root, node * n);
+static node * _update(node *n, char * key, void * val, size_t size);
+static node * _set(node *root, char * key, void * val, size_t size, int act);
 void swapData(node * target, node * source);
 
 
-/* Hashing reduces memory footprint
+/* Hashing reduces memory footprint and code complexity (i.e.: less code)
  * This is good enough for a proof of concept
- * (See K&R @ Chapter 6) */
+ * (See Chapter 6 @ K&R2) */
 static hashkey
 hash(char * k)
 {
@@ -73,7 +77,7 @@ hash(char * k)
 }
 
 void
-dispose(node * n){
+bst_dispose(node * n){
     if (n != NULL)
         free(n->val);
     free(n);
@@ -115,44 +119,64 @@ insert(node *parent, node *n)
 
 }
 
-node *
-update(node *root, char * key, void * val, size_t size)
+static node *
+_update(node *n, char * key, void * val, size_t size)
 {
-    node *n = search(root, key);
     void *aux;
-    if (n != NULL){
-        aux = malloc(size);
-        if (val == NULL) return NULL;
-        free(n->val);
-        memcpy(aux, val, size);
-        n->val = aux;
-        n->size = size;
-    }
+    aux = malloc(size);
+    if (val == NULL) return NULL;
+    free(n->val);
+    memcpy(aux, val, size);
+    n->val = aux;
+    n->size = size;
     return n;
 }
 
-node *
-set(node *root, char * key, void * val, size_t size)
+node * bst_update(node *root, char * key, void * val, size_t size)
 {
-    node *n = search(root, key);
+    node *n = bst_search(root, key);
+    if (n != NULL)
+        n = _update(n, key, val, size);
+    return n;
+}
+
+node * bst_add(node *root, char * key, void * val, size_t size)
+{
+    return _set(root, key, val, size, ADD);
+}
+
+node * bst_set(node *root, char * key, void * val, size_t size)
+{
+    return _set(root, key, val, size, SET);
+}
+
+/* Although add and set could be `#define'd, you wouldn't be able to use
+ * pointers to functions. */
+static node * _set(node *root, char * key, void * val, size_t size, int act)
+{
+    node *n = bst_search(root, key);
     if (n == NULL){
         n = Node(key, val, size);
         if (n != NULL){
             insert(root, n);
         }
+    } else {
+        if (act == SET)
+            n = _update(n, key, val, size);
+        else
+            n = NULL;
     }
     return n;
 }
 
-node *
-search(node *root, char * key)
+node * bst_search(node *root, char * key)
 {
     hashkey h = hash(key);
     if (root != NULL){
         if (root->key > h)
-            return search(root->left, key);
+            return bst_search(root->left, key);
         else if (root->key < h)
-            return search(root->right, key);
+            return bst_search(root->right, key);
         else
             return root;
     } else {
@@ -160,16 +184,15 @@ search(node *root, char * key)
     }
 }
 
-node *minimum(node *root){
+node * bst_minimum(node *root){
     return minormax(root, BST_LEFT);
 }
 
-node *maximum(node *root){
+node * bst_maximum(node *root){
     return minormax(root, BST_RIGHT);
 }
 
-static node *
-minormax(node *root, int i)
+static node * minormax(node *root, int i)
 {
     node *aux = root;
     while (aux != NULL){
@@ -179,8 +202,7 @@ minormax(node *root, int i)
     return root;
 }
 
-void
-swapData(node *target, node *source)
+void swapData(node *target, node *source)
 {
     node tmp;
     tmp.val = target->val;
@@ -195,44 +217,40 @@ swapData(node *target, node *source)
 }
 
 
-node *
-delete(node *root, char * key)
+node * bst_delete(node *root, char * key)
 {
-    node * n = search(root, key);
-    return del(root, n);
+    node * n = bst_search(root, key);
+    return _delete(root, n);
 }
 
-static node *
-del(node *root, node * n)
+static node * _delete(node *root, node * n)
 {
     node * c;
     if(n->left == NULL && n->right == NULL){
         if (n == root)
             root = NULL;
-        dispose(n);
+        bst_dispose(n);
     } else if (n->left != NULL && n->right != NULL){
-        c = minimum(n->right);
+        c = bst_minimum(n->right);
         swapData(n, c);
-        del(root, c);
+        _delete(root, c);
     } else {
         c = n->left == NULL? n->right : n->left;
         if (root == n)
             root = c;
         c->parent = n->parent;
-        dispose(n);
+        bst_dispose(n);
     }
     return root;
 }
 
 
-size_t
-getSize(node *n)
+size_t bst_node_size(node *n)
 {
     return n->size;
 }
 
-int
-getContent(node *n, void * d, size_t * s)
+int bst_node_content(node *n, void * d, size_t * s)
 {
     if (n != NULL && d != NULL){
         *s = n->size < *s ? n->size : *s;
@@ -245,16 +263,15 @@ getContent(node *n, void * d, size_t * s)
 
 /**
  * get searches for an entry with a given key and returns the node.
- * Aditionally, it sets d to the contents of the node (up to s), and
+ * Additionally, it sets d to the contents of the node (up to s), and
  * changes the value of s to reflect the new size of d. */
-node *
-get(node *r, char * key, void * d, size_t * s)
+node * bst_get(node *r, char * key, void * d, size_t * s)
 {
     node * n = NULL;
     if(r == NULL)
         return NULL;
-    n = search(r, key);
-    getContent(n, d, s);
+    n = bst_search(r, key);
+    bst_node_content(n, d, s);
     return n;
 }
 

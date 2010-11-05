@@ -40,16 +40,17 @@
 
 typedef struct Node node;
 
-node * set(node *root, char * key, void * val, size_t size);
-node * search(node *root, char * key);
-node * update(node *root, char * key, void * val, size_t size);
-node * pop(node *root, char * key);
-node * delete(node *root, char * key);
-node * get(node *r, char * key, void * d, size_t * s);
-node * minimum(node *root);
-node * maximum(node *root);
-void dispose(node * n);
-size_t getSize(node *n);
-int getContent(node *n, void * d, size_t * s);
+node * bst_set(node *root, char * key, void * val, size_t size);
+node * bst_add(node *root, char * key, void * val, size_t size);
+node * bst_search(node *root, char * key);
+node * bst_update(node *root, char * key, void * val, size_t size);
+node * bst_pop(node *root, char * key);
+node * bst_delete(node *root, char * key);
+node * bst_get(node *r, char * key, void * d, size_t * s);
+node * bst_minimum(node *root);
+node * bst_maximum(node *root);
+void bst_dispose(node * n);
+size_t bst_node_size(node *n);
+int bst_node_content(node *n, void * d, size_t * s);
 
 #endif
