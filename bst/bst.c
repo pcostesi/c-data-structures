@@ -34,7 +34,8 @@
 #ifndef __BSTC
 #define __BSTC 1
 
-#include <stdio.h>
+#include <string.h>
+#include <limits.h>
 #include "bst.h"
 
 
