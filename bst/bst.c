@@ -34,8 +34,10 @@
 #ifndef __BSTC
 #define __BSTC 1
 
+#include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <stddef.h>
 #include "bst.h"
 
 
@@ -63,14 +65,13 @@ static node * minormax(node * root, int i);
 static node * _delete(node *root, node * n);
 static node * _update(node *n, char * key, void * val, size_t size);
 static node * _set(node *root, char * key, void * val, size_t size, int act);
-void swapData(node * target, node * source);
+static void swapData(node * target, node * source);
 
 
-/* Hashing reduces memory footprint and code complexity (i.e.: less code)
+/* Hashing reduces memory footprint and makes searching faster.
  * This is good enough for a proof of concept
  * (See Chapter 6 @ K&R2) */
-static hashkey
-hash(char * k)
+static hashkey hash(char * k)
 {
     hashkey r = 0;
     for (; *k != 0; k++)
@@ -78,22 +79,15 @@ hash(char * k)
     return r % ULONG_MAX;
 }
 
-void
-<<<<<<< HEAD
-dispose(node * n){
+void bst_dispose(node * n){
     if (n != NULL){
-=======
-bst_dispose(node * n){
-    if (n != NULL)
->>>>>>> 495985ffcb55d40c68f5c4c0858d5efc7b50562b
         free(n->val);
 		free(n->str);
 	}
     free(n);
 }
 
-static node *
-Node(char * key, void * val, size_t size)
+static node * Node(char * key, void * val, size_t size)
 {
     node *n = NULL;
     hashkey h = hash(key);
@@ -111,9 +105,10 @@ Node(char * key, void * val, size_t size)
     n = malloc(sizeof(struct Node));
     if (n == NULL){
         free(mem);
-    
+		free(str);
     } else {
-		strcpy(n->str, key);
+		n->str = str;
+		strcpy(str, key);
         n->val = memcpy(mem, val, size);
         n->size = size;
         n->key = h;
@@ -121,11 +116,10 @@ Node(char * key, void * val, size_t size)
     return n;
 }
 
-static node *
-insert(node *parent, node *n)
+static node * insert(node *parent, node *n)
 {
     if (parent != NULL && n != NULL){
-        if (parent->key => n->key)
+        if (parent->key >= n->key)
             parent->left = insert(parent->left, n);
         else if (parent->key < n->key)
             parent->right = insert(parent->right, n);
@@ -136,8 +130,7 @@ insert(node *parent, node *n)
 
 }
 
-static node *
-_update(node *n, char * key, void * val, size_t size)
+static node * _update(node *n, char * key, void * val, size_t size)
 {
     void *aux;
     aux = malloc(size);
@@ -193,13 +186,9 @@ node * bst_search(node *root, char * key)
         if (root->key > h)
             return bst_search(root->left, key);
         else if (root->key < h)
-<<<<<<< HEAD
-            return search(root->right, key);
-        else if (strcmp(key, root->str))
-			return search(root->left, key);
-=======
             return bst_search(root->right, key);
->>>>>>> 495985ffcb55d40c68f5c4c0858d5efc7b50562b
+        else if (strcmp(key, root->str))
+			return bst_search(root->left, key);
         else
             return root;
     } else {
@@ -225,28 +214,14 @@ static node * minormax(node *root, int i)
     return root;
 }
 
-void swapData(node *target, node *source)
+static void swapData(node *target, node *source)
 {
     node tmp;
+    /* copy the struct until we hit `left' */
     memcpy(&tmp, target, offsetof(node, left));
     memcpy(target, source, offsetof(node, left));
     memcpy(target, &tmp, offsetof(node, left));
-    /*
-    tmp.val = target->val;
-    tmp.key = target->key;
-    tmp.size = target->size;
-    tmp.str = target->str;
-    target->str = source->str;
-    target->key = source->key;
-    target->val = source->val;
-    target->size = source->size;
-    source->str = tmp.str;
-    source->key = tmp.key;
-    source->val = tmp.val;
-    source->size = tmp.size;
-    */
 }
-
 
 node * bst_delete(node *root, char * key)
 {
@@ -305,5 +280,10 @@ node * bst_get(node *r, char * key, void * d, size_t * s)
     bst_node_content(n, d, s);
     return n;
 }
+
+#undef BST_LEFT
+#undef BST_RIGHT
+#undef SET
+#undef ADD
 
 #endif

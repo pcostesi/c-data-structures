@@ -1,7 +1,7 @@
 /*
 //      main.c
 //
-//      Copyright 2010 Pablo Alejandro Costesich <pcostesi@one110>
+//      Copyright 2010 Pablo Alejandro Costesich <pcostesi@alu.itba.edu.ar>
 //
 //      This program is free software; you can redistribute it and/or modify
 //      it under the terms of the GNU General Public License as published by
@@ -25,6 +25,14 @@
 #include "bst.h"
 
 #define BUFFER_SIZE 64
+
+#define PRINTN(A, B) {  sbuffer = BUFFER_SIZE; \
+						memset(buffer, 0, sizeof buffer); \
+						printf("\"%s\": \"%s\"\n", B, \
+							 bst_get(A, B, &buffer, &sbuffer) ? \
+								buffer : "<NULL>"); \
+					 }
+
 
 int main(int argc, char **argv)
 {
@@ -50,23 +58,11 @@ int main(int argc, char **argv)
      * - get() will modify sbuffer to reflect the actual size of the
      *   data copied to buffer.
      */
-    sbuffer = BUFFER_SIZE;
-    if (bst_get(root, "test", &buffer, &sbuffer) == NULL)
-        fprintf(stderr, "GET: got NULL\n");
-    printf("test for key \"test\": %s\nbuffer size: %d\n", buffer, sbuffer);
-
-    sbuffer = BUFFER_SIZE;
-    memset(buffer, 0, sizeof buffer);
-    if (bst_get(root, "test2", &buffer, &sbuffer) == NULL)
-        fprintf(stderr, "GET: got NULL\n");
-    printf("test for key \"test2\": %s\nbuffer size: %d\n", buffer, sbuffer);
-
-    sbuffer = BUFFER_SIZE;
-    memset(buffer, 0, sizeof buffer);
-    if (bst_get(root, "test3", &buffer, &sbuffer) == NULL)
-        fprintf(stderr, "GET: got NULL\n");
-    printf("test for key \"test3\": %s\nbuffer size: %d\n", buffer, sbuffer);
+    PRINTN(root, "test");
+    PRINTN(root, "test2");
+    root = bst_delete(root, "test");
+    PRINTN(root, "test");
+    PRINTN(root, "test3");
 
     return 0;
 }
-

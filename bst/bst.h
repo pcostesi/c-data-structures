@@ -34,7 +34,7 @@
 
 #ifndef __BSTH
 #define __BSTH 1
-#include <stdlib.h>
+
 
 typedef struct Node node;
 
