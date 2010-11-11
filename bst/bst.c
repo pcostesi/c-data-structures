@@ -45,6 +45,7 @@ typedef unsigned long int hashkey;
 
 struct Node{
     hashkey key;
+    char * str;
     void * val;
     size_t size;
     struct Node * left;
@@ -74,8 +75,10 @@ hash(char * k)
 
 void
 dispose(node * n){
-    if (n != NULL)
+    if (n != NULL){
         free(n->val);
+		free(n->str);
+	}
     free(n);
 }
 
@@ -84,15 +87,23 @@ Node(char * key, void * val, size_t size)
 {
     node *n = NULL;
     hashkey h = hash(key);
+    char * str = NULL;
     void * mem = malloc(size);
-
+    
     if (mem == NULL) return NULL;
-
+    
+	str = malloc(strlen(key) + 1);
+	if (str == NULL){
+		free(mem);
+		return NULL;
+	 }
+    
     n = malloc(sizeof(struct Node));
-
     if (n == NULL){
         free(mem);
+    
     } else {
+		strcpy(n->str, key);
         n->val = memcpy(mem, val, size);
         n->size = size;
         n->key = h;
@@ -104,7 +115,7 @@ static node *
 insert(node *parent, node *n)
 {
     if (parent != NULL && n != NULL){
-        if (parent->key > n->key)
+        if (parent->key => n->key)
             parent->left = insert(parent->left, n);
         else if (parent->key < n->key)
             parent->right = insert(parent->right, n);
@@ -153,6 +164,8 @@ search(node *root, char * key)
             return search(root->left, key);
         else if (root->key < h)
             return search(root->right, key);
+        else if (strcmp(key, root->str))
+			return search(root->left, key);
         else
             return root;
     } else {
@@ -183,15 +196,23 @@ void
 swapData(node *target, node *source)
 {
     node tmp;
+    memcpy(&tmp, target, offsetof(node, left));
+    memcpy(target, source, offsetof(node, left));
+    memcpy(target, &tmp, offsetof(node, left));
+    /*
     tmp.val = target->val;
     tmp.key = target->key;
     tmp.size = target->size;
+    tmp.str = target->str;
+    target->str = source->str;
     target->key = source->key;
     target->val = source->val;
     target->size = source->size;
+    source->str = tmp.str;
     source->key = tmp.key;
     source->val = tmp.val;
     source->size = tmp.size;
+    */
 }
 
 
