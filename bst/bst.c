@@ -31,9 +31,6 @@
  *      OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __BSTC
-#define __BSTC 1
-
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
@@ -82,8 +79,8 @@ static hashkey hash(char * k)
 void bst_dispose(node * n){
     if (n != NULL){
         free(n->val);
-		free(n->str);
-	}
+        free(n->str);
+    }
     free(n);
 }
 
@@ -93,22 +90,22 @@ static node * Node(char * key, void * val, size_t size)
     hashkey h = hash(key);
     char * str = NULL;
     void * mem = malloc(size);
-    
+
     if (mem == NULL) return NULL;
-    
-	str = malloc(strlen(key) + 1);
-	if (str == NULL){
-		free(mem);
-		return NULL;
-	 }
-    
+
+    str = malloc(strlen(key) + 1);
+    if (str == NULL){
+        free(mem);
+        return NULL;
+     }
+
     n = malloc(sizeof(struct Node));
     if (n == NULL){
         free(mem);
-		free(str);
+        free(str);
     } else {
-		n->str = str;
-		strcpy(str, key);
+        n->str = str;
+        strcpy(str, key);
         n->val = memcpy(mem, val, size);
         n->size = size;
         n->key = h;
@@ -188,7 +185,7 @@ node * bst_search(node *root, char * key)
         else if (root->key < h)
             return bst_search(root->right, key);
         else if (strcmp(key, root->str))
-			return bst_search(root->left, key);
+            return bst_search(root->left, key);
         else
             return root;
     } else {
@@ -256,34 +253,29 @@ size_t bst_node_size(node *n)
     return n->size;
 }
 
-int bst_node_content(node *n, void * d, size_t * s)
+size_t bst_node_content(node *n, void * d, size_t s)
 {
     if (n != NULL && d != NULL){
-        *s = n->size < *s ? n->size : *s;
-        memcpy(d, n->val, *s);
-        return 1;
+        s = s == 0 || n->size < s ? n->size : s;
+        memcpy(d, n->val, s);
+        return s;
     }
-    return -1;
+    return 0;
 }
 
 
 /**
- * get searches for an entry with a given key and returns the node.
- * Additionally, it sets d to the contents of the node (up to s), and
- * changes the value of s to reflect the new size of d. */
-node * bst_get(node *r, char * key, void * d, size_t * s)
+ * get searches for an entry with a given key and returns the node. */
+size_t bst_get(node *r, char * key, void * d, size_t s)
 {
     node * n = NULL;
     if(r == NULL)
-        return NULL;
+        return 0;
     n = bst_search(r, key);
-    bst_node_content(n, d, s);
-    return n;
+    return bst_node_content(n, d, s);
 }
 
 #undef BST_LEFT
 #undef BST_RIGHT
 #undef SET
 #undef ADD
-
-#endif

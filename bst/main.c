@@ -26,12 +26,11 @@
 
 #define BUFFER_SIZE 64
 
-#define PRINTN(A, B) {  sbuffer = BUFFER_SIZE; \
-						memset(buffer, 0, sizeof buffer); \
-						printf("\"%s\": \"%s\"\n", B, \
-							 bst_get(A, B, &buffer, &sbuffer) ? \
-								buffer : "<NULL>"); \
-					 }
+#define PRINTN(A, B) {  memset(buffer, 0, BUFFER_SIZE); \
+                        printf("\"%s\": \"%s\"\n", B, \
+                             bst_get(A, B, &buffer, BUFFER_SIZE) ? \
+                                buffer : "<NULL>"); \
+                     }
 
 
 int main(int argc, char **argv)
@@ -55,8 +54,7 @@ int main(int argc, char **argv)
     /* this is how you query the tree:
      * - set sbuffer to the buffer size;
      * - optionally, clean the buffer;
-     * - get() will modify sbuffer to reflect the actual size of the
-     *   data copied to buffer.
+     * - get() will return the number of bytes copied into the buffer.
      */
     PRINTN(root, "test");
     PRINTN(root, "test2");

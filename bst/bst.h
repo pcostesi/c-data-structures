@@ -38,17 +38,17 @@
 
 typedef struct Node node;
 
-node * bst_set(node *root, char * key, void * val, size_t size);
-node * bst_add(node *root, char * key, void * val, size_t size);
-node * bst_search(node *root, char * key);
-node * bst_update(node *root, char * key, void * val, size_t size);
-node * bst_pop(node *root, char * key);
-node * bst_delete(node *root, char * key);
-node * bst_get(node *r, char * key, void * d, size_t * s);
-node * bst_minimum(node *root);
-node * bst_maximum(node *root);
-void bst_dispose(node * n);
-size_t bst_node_size(node *n);
-int bst_node_content(node *n, void * d, size_t * s);
+node *  bst_set(node *root, char * key, void * val, size_t size);
+node *  bst_add(node *root, char * key, void * val, size_t size);
+node *  bst_search(node *root, char * key);
+node *  bst_update(node *root, char * key, void * val, size_t size);
+node *  bst_pop(node *root, char * key);
+node *  bst_delete(node *root, char * key);
+size_t  bst_get(node *r, char * key, void * d, size_t s);
+node *  bst_minimum(node *root);
+node *  bst_maximum(node *root);
+void    bst_dispose(node * n);
+size_t  bst_node_size(node *n);
+size_t  bst_node_content(node *n, void * d, size_t s);
 
 #endif
