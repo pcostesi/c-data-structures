@@ -45,4 +45,8 @@ size_t  ht_get(ht * t, char * key, void * buffer, size_t size);
 ht *    ht_set(ht * t, char * key, void * buffer, size_t size);
 ht *    ht_del(ht * t, char * key);
 ht *    ht_update(ht * t, char * key, void * buffer, size_t size);
+float   ht_set_low(ht * t, float ratio);
+float   ht_set_high(ht * t, float ratio);
+int     ht_set_min(ht * t, size_t size);
+int     ht_set_max(ht * t, size_t size);
 #endif

@@ -40,7 +40,7 @@
 #define LOW 0.4
 #define HIGH 0.75
 #define MAX UINT_MAX
-#define HT_MINSIZE (1 << 15)
+#define HT_MINSIZE (1 << 10)
 /* I should *really* use an enum with primes for each table size */
 #define HASH(T, K) (T->hash_f(K) % T->buckets_size)
 
@@ -136,9 +136,8 @@ static kv * _new_kv(char * key, void * val, size_t size){
 
 static kv * _append(kv * list, char * key, void * val, size_t size){
     kv * n = _new_kv(key, val, size);
-    if (n == NULL)
-        return NULL;
-    n->next = list;
+    if (n != NULL)
+        n->next = list;
     return n;
 }
 
@@ -202,13 +201,16 @@ static kv * _del(kv * list, char * key){
     kv * ret = NULL;
     for (; list != NULL && !strcmp(list->key, key); list = list->next)
         prev = list;
-    if (orig == list && list != NULL){
-        ret = list->next;
-        kv_free_node(list);
-        return ret;
-    } else if (list != NULL) {
-        ret = orig;
-        prev->next = list->next;
+
+    if (list != NULL){
+        if (orig == list){
+            ret = list->next;
+            kv_free_node(list);
+            return ret;
+        } else {
+            ret = orig;
+            prev->next = list->next;
+        }
     }
     return NULL;
 }
@@ -297,6 +299,38 @@ void ht_free(ht * t){
         kv_free_list(t->buckets[i]);
     free(t->buckets);
     free(t);
+}
+
+float ht_set_low(ht * t, float ratio){
+    float old = t->low;
+    if (0 < ratio && ratio < 1){
+        t->low = ratio;
+        _resize(t);
+    }
+    return old;
+}
+
+float ht_set_high(ht * t, float ratio){
+    float old = t->high;
+    if (0 < ratio && ratio < 1){
+        t->high = ratio;
+        _resize(t);
+    }
+    return old;
+}
+
+int ht_set_min(ht * t, size_t size){
+    int old = t->min;
+    if (size > 0)
+        t->min = size;
+    _resize(t);
+}
+
+int ht_set_max(ht * t, size_t size){
+    int old = t->max;
+    if (size > 0)
+        t->max = size;
+    _resize(t);
 }
 
 #undef HASH
