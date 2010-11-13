@@ -39,7 +39,7 @@
 
 #define LOW 0.4
 #define HIGH 0.75
-#define MAX UINT_MAX
+#define MAX ULONG_MAX
 #define HT_MINSIZE (1 << 10)
 /* I should *really* use an enum with primes for each table size */
 #define HASH(T, K) (T->hash_f(K) % T->buckets_size)
