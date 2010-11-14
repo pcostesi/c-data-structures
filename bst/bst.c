@@ -89,7 +89,10 @@ static node * Node(char * key, void * val, size_t size)
     node *n = NULL;
     hashkey h = hash(key);
     char * str = NULL;
-    void * mem = malloc(size);
+    void * mem;
+
+    size = size == 0 ? strlen(val) + 1 : size;
+    mem = malloc(size);
 
     if (mem == NULL) return NULL;
 
@@ -130,6 +133,7 @@ static node * insert(node *parent, node *n)
 static node * _update(node *n, char * key, void * val, size_t size)
 {
     void *aux;
+    size = size == 0 ? strlen(val) + 1 : size;
     aux = malloc(size);
     if (val == NULL) return NULL;
     free(n->val);
