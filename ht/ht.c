@@ -246,10 +246,10 @@ size_t ht_get(ht * t, char * key, void * buffer, size_t size){
     list = _walk(list, key);
     if (list == NULL)
         return 0;
-    size = size == 0 || size > list->size ? list->size : size;
+    size = size > list->size ? list->size : size;
     memcpy(buffer, list->val, size);
 
-    return size;
+    return size == 0 ? list->size : size;
 }
 
 ht * ht_set(ht * t, char * key, void * val, size_t size){
