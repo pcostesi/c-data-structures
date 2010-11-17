@@ -287,7 +287,7 @@ ht * ht_update(ht * t, char * key, void * buffer, size_t size){
     hashkey hash = HASH(t, key);
     kv * list = _walk(t->buckets[hash], key);
 
-    if(!_update(t->buckets[hash], buffer, size))
+    if(!_update(list, buffer, size))
         return NULL;
 
     return _resize(t);
@@ -305,7 +305,6 @@ float ht_set_low(ht * t, float ratio){
     float old = t->low;
     if (0 < ratio && ratio < 1){
         t->low = ratio;
-        _resize(t);
     }
     return old;
 }
@@ -314,7 +313,6 @@ float ht_set_high(ht * t, float ratio){
     float old = t->high;
     if (0 < ratio && ratio < 1){
         t->high = ratio;
-        _resize(t);
     }
     return old;
 }
@@ -323,14 +321,14 @@ int ht_set_min(ht * t, size_t size){
     int old = t->min;
     if (size > 0)
         t->min = size;
-    _resize(t);
+    return old;
 }
 
 int ht_set_max(ht * t, size_t size){
     int old = t->max;
     if (size > 0)
         t->max = size;
-    _resize(t);
+    return old;
 }
 
 #undef HASH
