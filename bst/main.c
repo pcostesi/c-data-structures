@@ -58,6 +58,7 @@ int main(int argc, char **argv)
      */
     PRINTN(root, "test");
     PRINTN(root, "test2");
+    printf("Deleting key \"test\"\n");
     root = bst_delete(root, "test");
     PRINTN(root, "test");
     PRINTN(root, "test3");

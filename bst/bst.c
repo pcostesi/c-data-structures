@@ -123,6 +123,8 @@ static node * insert(node *parent, node *n)
             parent->left = insert(parent->left, n);
         else if (parent->key < n->key)
             parent->right = insert(parent->right, n);
+        else if (strcmp(parent->str, n->str))
+            parent->left = insert(parent->left, n);
         n->parent = parent;
         return parent;
     }
