@@ -62,6 +62,6 @@ int main(int argc, char **argv)
     root = bst_delete(root, "test");
     PRINTN(root, "test");
     PRINTN(root, "test3");
-    bst_dispose(root);
+    bst_free(root);
     return 0;
 }

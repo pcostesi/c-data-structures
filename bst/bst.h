@@ -48,6 +48,7 @@ size_t  bst_get(node *r, char * key, void * d, size_t s);
 node *  bst_minimum(node *root);
 node *  bst_maximum(node *root);
 void    bst_dispose(node * n);
+void    bst_free(node * n);
 size_t  bst_node_size(node *n);
 size_t  bst_node_content(node *n, void * d, size_t s);
 

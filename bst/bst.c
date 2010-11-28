@@ -78,12 +78,18 @@ static hashkey hash(char * k)
 
 void bst_dispose(node * n){
     if (n != NULL){
-        bst_dispose(n->left);
-        bst_dispose(n->right);
         free(n->val);
         free(n->str);
     }
     free(n);
+}
+
+void bst_free(node * n){
+    if (n != NULL){
+        bst_free(n->left);
+        bst_free(n->right);
+        bst_dispose(n);
+    }
 }
 
 static node * Node(char * key, void * val, size_t size)
