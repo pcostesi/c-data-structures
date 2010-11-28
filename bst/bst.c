@@ -78,6 +78,8 @@ static hashkey hash(char * k)
 
 void bst_dispose(node * n){
     if (n != NULL){
+        bst_dispose(n->left);
+        bst_dispose(n->right);
         free(n->val);
         free(n->str);
     }
@@ -112,6 +114,7 @@ static node * Node(char * key, void * val, size_t size)
         n->val = memcpy(mem, val, size);
         n->size = size;
         n->key = h;
+        n->left = n->right = NULL;
     }
     return n;
 }

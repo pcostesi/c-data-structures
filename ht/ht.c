@@ -232,7 +232,7 @@ ht * ht_new(hashf f){
     t->low = LOW;
     t->high = HIGH;
     t->max = MAX;
-    t->hash_f = f ? f : &hash;
+    t->hash_f = f ? f : hash;
     return t;
 }
 
