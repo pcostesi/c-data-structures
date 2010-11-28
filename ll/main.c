@@ -60,7 +60,7 @@ int main(int argc, char **argv)
     list = ll_remove(list);
     print_haiku(list);
 
-    free(list2);
+    ll_free(list2);
     ll_free(list);
     return 0;
 }
