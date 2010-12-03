@@ -42,7 +42,7 @@ struct List{
     struct List * prev;
 };
 
-llist * ll_new(void * val, size_t size){
+llist * ll_new(const void * val, size_t size){
     llist * list = malloc(sizeof(llist));
     if (list == NULL)
         return NULL;
@@ -59,7 +59,7 @@ llist * ll_new(void * val, size_t size){
     return list;
 }
 
-llist * ll_append(llist * list, void * val, size_t size){
+llist * ll_append(llist * list, const void * val, size_t size){
     return ll_insert(ll_tail(list), val, size);
 }
 
@@ -100,7 +100,7 @@ llist * ll_paste(llist * list, llist * n){
     return n;
 }
 
-llist * ll_update(llist * list, void * val, size_t size){
+llist * ll_update(llist * list, const void * val, size_t size){
     void * aux = malloc(size);
     if (aux == NULL)
         return NULL;
@@ -111,7 +111,7 @@ llist * ll_update(llist * list, void * val, size_t size){
     return list;
 }
 
-llist * ll_insert(llist * list, void * val, size_t size){
+llist * ll_insert(llist * list, const void * val, size_t size){
     llist * n = ll_new(val, size);
     if (n == NULL)
         return NULL;
@@ -143,4 +143,17 @@ llist * ll_next(llist * list){
 
 llist * ll_prev(llist * list){
     return list->prev;
+}
+
+
+llist * ll_map(llist * list, ll_map_f * f){
+    llist * iter;
+    llist * result = NULL;
+    llist * aux;
+
+    for (iter = list; iter != NULL; iter = ll_next(iter)){
+        aux = ll_paste(result, (*f)(iter->data, iter->size));
+        if (!result) result = aux;
+    }
+    return result;
 }

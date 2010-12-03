@@ -37,11 +37,13 @@
 
 typedef struct  List llist;
 
-llist * ll_append(llist * list, void * val, size_t size);
+typedef llist * (*ll_map_f)(const void *, size_t);
+
+llist * ll_append(llist * list, const void * val, size_t size);
 llist * ll_remove(llist * list);
-llist * ll_new(void * val, size_t size);
-llist * ll_insert(llist * list, void * val, size_t size);
-llist * ll_update(llist * list, void * val, size_t size);
+llist * ll_new(const void * val, size_t size);
+llist * ll_insert(llist * list, const void * val, size_t size);
+llist * ll_update(llist * list, const void * val, size_t size);
 llist * ll_paste(llist * list, llist * n);
 llist * ll_next(llist * list);
 llist * ll_prev(llist * list);
@@ -49,5 +51,6 @@ llist * ll_tail(llist * list);
 llist * ll_head(llist * list);
 size_t  ll_get(llist * list, void * buffer, size_t size);
 void    ll_free(llist * list);
+llist * ll_map(llist * list, ll_map_f * f);
 
 #endif
