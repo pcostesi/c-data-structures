@@ -236,14 +236,34 @@ ht * ht_new(hashf f){
     return t;
 }
 
+void * ht_aget(ht * t, char * key, size_t * size){
+    kv * list = NULL;
+    hashkey hash = HASH(t, key);
+    void * data = NULL;
+    size_t bytes = 0;
+
+    list = _walk(t->buckets[hash], key);
+    if (list == NULL)
+        return NULL;
+
+    if (size){
+        *size = (*size > list->size || *size == 0) ? list->size : *size;
+        bytes = *size;
+    } else
+        bytes = list->size;
+
+    data = malloc(bytes);
+    if (!data)
+        return NULL;
+
+    return memcpy(data, list->val, bytes);
+}
+
 size_t ht_get(ht * t, char * key, void * buffer, size_t size){
     kv * list = NULL;
     hashkey hash = HASH(t, key);
 
-    list = t->buckets[hash];
-    if (list == NULL)
-        return 0;
-    list = _walk(list, key);
+    list = _walk(t->buckets[hash], key);
     if (list == NULL)
         return 0;
     size = size > list->size ? list->size : size;

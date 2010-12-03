@@ -42,6 +42,7 @@ typedef struct Hashtable ht;
 void    ht_free(ht * t);
 ht *    ht_new(hashf f);
 size_t  ht_get(ht * t, char * key, void * buffer, size_t size);
+void *  ht_aget(ht * t, char * key, size_t * size);
 ht *    ht_set(ht * t, char * key, void * buffer, size_t size);
 ht *    ht_del(ht * t, char * key);
 ht *    ht_update(ht * t, char * key, void * buffer, size_t size);

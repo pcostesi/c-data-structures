@@ -18,6 +18,7 @@ int main(int argc, char **argv)
     ht * t = ht_new(NULL);
     size_t bsize;
     char buffer[] = "GARBAGEGARBAGEGARBAGEGARBAGEGARBAGEGARBAGEGARBAGE";
+
     bsize = 1 + strlen(buffer);
     if (ht_set(t, "test", "this is a test string", 0) == NULL)
         fprintf(stderr, "SET: table ERROR\n");
@@ -43,6 +44,7 @@ int main(int argc, char **argv)
     if (!ht_get(t, "test", &buffer, 0))
         fprintf(stderr, "GET: table MISS\n");
     printf("%s: %s\n", "test", buffer);
+
     ht_free(t);
     return 0;
 }
