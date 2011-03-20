@@ -37,7 +37,7 @@
 
 typedef struct  List llist;
 
-typedef llist * (*ll_map_f)(const void *, size_t);
+typedef int (*ll_filter_f)(const void *, size_t);
 
 llist * ll_append(llist * list, const void * val, size_t size);
 llist * ll_remove(llist * list);
@@ -51,6 +51,6 @@ llist * ll_tail(llist * list);
 llist * ll_head(llist * list);
 size_t  ll_get(llist * list, void * buffer, size_t size);
 void    ll_free(llist * list);
-llist * ll_map(llist * list, ll_map_f * f);
-
+llist * ll_filter(llist * list, ll_filter_f * f);
+llist * ll_split(llist * list, ll_filter_f * f);
 #endif

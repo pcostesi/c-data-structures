@@ -146,14 +146,30 @@ llist * ll_prev(llist * list){
 }
 
 
-llist * ll_map(llist * list, ll_map_f * f){
+llist * ll_filter(llist * list, ll_filter_f * f){
     llist * iter;
     llist * result = NULL;
-    llist * aux;
 
-    for (iter = list; iter != NULL; iter = ll_next(iter)){
-        aux = ll_paste(result, (*f)(iter->data, iter->size));
-        if (!result) result = aux;
-    }
+    for (iter = list; iter != NULL; iter = ll_next(iter))
+        if ((*f)(iter->val, iter->size))
+            result = result ? result : ll_insert(result, iter->val, iter->size);
+
     return result;
+}
+
+void ll_split(llist ** list, llist ** newlist, ll_filter_f * f){
+    llist * iter = *list, * aux;
+    llist * tail = ll_tail(*newlist);
+
+        while (iter){
+            if ((*f)(iter->val, iter->size)){
+                aux = iter;
+                iter = ll_next(iter);
+                *list = ll_remove(aux);
+                tail = ll_paste(tail, aux);
+            } else {
+                iter = ll_next(iter);
+            }
+        }
+        *newlist = ll_head(tail);
 }
