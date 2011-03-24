@@ -35,21 +35,23 @@
 #ifndef __BSTH
 #define __BSTH 1
 
+#include <stddef.h>
 
-typedef struct Node node;
+typedef struct bstnode bstnode;
 
-node *  bst_set(node *root, char * key, void * val, size_t size);
-node *  bst_add(node *root, char * key, void * val, size_t size);
-node *  bst_search(node *root, char * key);
-node *  bst_update(node *root, char * key, void * val, size_t size);
-node *  bst_pop(node *root, char * key);
-node *  bst_delete(node *root, char * key);
-size_t  bst_get(node *r, char * key, void * d, size_t s);
-node *  bst_minimum(node *root);
-node *  bst_maximum(node *root);
-void    bst_dispose(node * n);
-void    bst_free(node * n);
-size_t  bst_node_size(node *n);
-size_t  bst_node_content(node *n, void * d, size_t s);
+bstnode *  bst_set(bstnode *root, char * key, void * val, size_t size);
+bstnode *  bst_add(bstnode *root, char * key, void * val, size_t size);
+bstnode *  bst_search(bstnode *root, char * key);
+bstnode *  bst_update(bstnode *root, char * key, void * val, size_t size);
+bstnode *  bst_pop(bstnode *root, char * key);
+bstnode *  bst_delete(bstnode *root, char * key);
+size_t  bst_get(bstnode *r, char * key, void * d, size_t s);
+bstnode *  bst_minimum(bstnode *root);
+bstnode *  bst_maximum(bstnode *root);
+void    bst_dispose(bstnode * n);
+void    bst_free(bstnode * n);
+size_t  bst_node_size(bstnode *n);
+size_t  bst_node_content(bstnode *n, void * d, size_t s);
+size_t  bst_nearest(bstnode * root, char * key, void * d, size_t s);
 
 #endif

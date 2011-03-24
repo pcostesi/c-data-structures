@@ -38,9 +38,9 @@ int main(int argc, char **argv)
     char * test = "this is a test. Let's see if it works!";
     char buffer[BUFFER_SIZE];
     size_t sbuffer;
-    node * root = NULL;
+    bstnode * root = NULL;
 
-    /* set a few nodes to test the tree:
+    /* set a few bstnodes to test the tree:
      *  - Add adds an element, and fails when it already exists;
      *  - Set adds an element, updating it if already exists;
      *  - Update only updates existing elements. */
@@ -50,6 +50,9 @@ int main(int argc, char **argv)
     if (bst_add(root, "test", NULL, 0) != NULL)
         fprintf(stderr, "add should fail with existing keys\n");
     bst_update(root, "test3", "abcdef", 4);
+
+    bst_nearest(root, "te", buffer, 2);
+    printf("\n%2s\n", buffer);
 
     /* this is how you query the tree:
      * - set sbuffer to the buffer size;

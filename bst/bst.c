@@ -43,40 +43,25 @@
 #define SET 0
 #define ADD 1
 
-typedef unsigned long int hashkey;
-
-struct Node{
-    hashkey key;
+struct bstnode{
     char * str;
     void * val;
     size_t size;
-    struct Node * left;
-    struct Node * parent;
-    struct Node * right;
+    struct bstnode * left;
+    struct bstnode * parent;
+    struct bstnode * right;
 };
 
-static hashkey hash(char * k);
-static node * Node(char * key, void * val, size_t size);
-static node * insert(node * root, node * n);
-static node * minormax(node * root, int i);
-static node * _delete(node *root, node * n);
-static node * _update(node *n, char * key, void * val, size_t size);
-static node * _set(node *root, char * key, void * val, size_t size, int act);
-static void swapData(node * target, node * source);
+static bstnode * new_bstnode(char * key, void * val, size_t size);
+static bstnode * insert(bstnode * root, bstnode * n);
+static bstnode * minormax(bstnode * root, int i);
+static bstnode * _delete(bstnode *root, bstnode * n);
+static bstnode * _update(bstnode *n, char * key, void * val, size_t size);
+static bstnode * _set(bstnode *root, char * key, void * val, size_t size, int act);
+static void swapData(bstnode * target, bstnode * source);
 
 
-/* Hashing reduces memory footprint and makes searching faster.
- * This is good enough for a proof of concept
- * (See Chapter 6 @ K&R2) */
-static hashkey hash(char * k)
-{
-    hashkey r = 0;
-    for (; *k != 0; k++)
-        r = *k + 31 * r;
-    return r % ULONG_MAX;
-}
-
-void bst_dispose(node * n){
+void bst_dispose(bstnode * n){
     if (n != NULL){
         free(n->val);
         free(n->str);
@@ -84,7 +69,7 @@ void bst_dispose(node * n){
     free(n);
 }
 
-void bst_free(node * n){
+void bst_free(bstnode * n){
     if (n != NULL){
         bst_free(n->left);
         bst_free(n->right);
@@ -92,10 +77,9 @@ void bst_free(node * n){
     }
 }
 
-static node * Node(char * key, void * val, size_t size)
+static bstnode * new_bstnode(char * key, void * val, size_t size)
 {
-    node *n = NULL;
-    hashkey h = hash(key);
+    bstnode *n = NULL;
     char * str = NULL;
     void * mem;
 
@@ -110,7 +94,7 @@ static node * Node(char * key, void * val, size_t size)
         return NULL;
      }
 
-    n = malloc(sizeof(struct Node));
+    n = malloc(sizeof(struct bstnode));
     if (n == NULL){
         free(mem);
         free(str);
@@ -119,21 +103,21 @@ static node * Node(char * key, void * val, size_t size)
         strcpy(str, key);
         n->val = memcpy(mem, val, size);
         n->size = size;
-        n->key = h;
         n->left = n->right = NULL;
     }
     return n;
 }
 
-static node * insert(node *parent, node *n)
+static bstnode * insert(bstnode *parent, bstnode *n)
 {
+    int cmp;
+
     if (parent != NULL && n != NULL){
-        if (parent->key >= n->key)
+        cmp = strcmp(parent->str, n->str);
+        if (cmp >= 0)
             parent->left = insert(parent->left, n);
-        else if (parent->key < n->key)
+        else if (cmp < 0)
             parent->right = insert(parent->right, n);
-        else if (strcmp(parent->str, n->str))
-            parent->left = insert(parent->left, n);
         n->parent = parent;
         return parent;
     }
@@ -141,7 +125,7 @@ static node * insert(node *parent, node *n)
 
 }
 
-static node * _update(node *n, char * key, void * val, size_t size)
+static bstnode * _update(bstnode *n, char * key, void * val, size_t size)
 {
     void *aux;
     size = size == 0 ? strlen(val) + 1 : size;
@@ -154,31 +138,31 @@ static node * _update(node *n, char * key, void * val, size_t size)
     return n;
 }
 
-node * bst_update(node *root, char * key, void * val, size_t size)
+bstnode * bst_update(bstnode *root, char * key, void * val, size_t size)
 {
-    node *n = bst_search(root, key);
+    bstnode *n = bst_search(root, key);
     if (n != NULL)
         n = _update(n, key, val, size);
     return n;
 }
 
-node * bst_add(node *root, char * key, void * val, size_t size)
+bstnode * bst_add(bstnode *root, char * key, void * val, size_t size)
 {
     return _set(root, key, val, size, ADD);
 }
 
-node * bst_set(node *root, char * key, void * val, size_t size)
+bstnode * bst_set(bstnode *root, char * key, void * val, size_t size)
 {
     return _set(root, key, val, size, SET);
 }
 
 /* Although add and set could be `#define'd, you wouldn't be able to use
  * pointers to functions. */
-static node * _set(node *root, char * key, void * val, size_t size, int act)
+static bstnode * _set(bstnode *root, char * key, void * val, size_t size, int act)
 {
-    node *n = bst_search(root, key);
+    bstnode *n = bst_search(root, key);
     if (n == NULL){
-        n = Node(key, val, size);
+        n = new_bstnode(key, val, size);
         if (n != NULL){
             insert(root, n);
         }
@@ -191,16 +175,16 @@ static node * _set(node *root, char * key, void * val, size_t size, int act)
     return n;
 }
 
-node * bst_search(node *root, char * key)
+bstnode * bst_search(bstnode *root, char * key)
 {
-    hashkey h = hash(key);
+    int cmp;
+
     if (root != NULL){
-        if (root->key > h)
+        cmp = strcmp(root->str, key);
+        if (cmp > 0)
             return bst_search(root->left, key);
-        else if (root->key < h)
+        else if (cmp < 0)
             return bst_search(root->right, key);
-        else if (strcmp(key, root->str))
-            return bst_search(root->left, key);
         else
             return root;
     } else {
@@ -208,17 +192,17 @@ node * bst_search(node *root, char * key)
     }
 }
 
-node * bst_minimum(node *root){
+bstnode * bst_minimum(bstnode *root){
     return minormax(root, BST_LEFT);
 }
 
-node * bst_maximum(node *root){
+bstnode * bst_maximum(bstnode *root){
     return minormax(root, BST_RIGHT);
 }
 
-static node * minormax(node *root, int i)
+static bstnode * minormax(bstnode *root, int i)
 {
-    node *aux = root;
+    bstnode *aux = root;
     while (aux != NULL){
         aux = (i == BST_RIGHT) ? aux->right : aux->left;
         root = (aux == NULL) ? root : aux;
@@ -226,24 +210,58 @@ static node * minormax(node *root, int i)
     return root;
 }
 
-static void swapData(node *target, node *source)
-{
-    node tmp;
-    /* copy the struct until we hit `left' */
-    memcpy(&tmp, target, offsetof(node, left));
-    memcpy(target, source, offsetof(node, left));
-    memcpy(target, &tmp, offsetof(node, left));
+size_t bst_nearest(bstnode * root, char * key, void * d, size_t s){
+    size_t bytes;
+    bstnode * nearest = NULL;
+    int cmp;
+
+    if (root == NULL)
+        return 0;
+    cmp = strcmp(root->str, key);
+    if (cmp > 0)
+        bytes = bst_nearest(root->left, key, d, s);
+    else if (cmp < 0)
+        bytes = bst_nearest(root->right, key, d, s);
+    else
+        nearest = root;
+
+    if (nearest == NULL && bytes == 0){
+        if (root->left && root->right){
+            cmp = strcmp(root->left->str, root->right->str);
+            nearest = cmp <= 0 ? root->left : root->right;
+        } else {
+            nearest = root->left != NULL ? root->left : root->right;
+        }
+    }
+
+    if (nearest == NULL)
+        return 0;
+
+    bytes = nearest->size;
+    s = s <= bytes ? s : bytes;
+    memcpy(d, nearest->val, s);
+
+    return bytes;
 }
 
-node * bst_delete(node *root, char * key)
+static void swapData(bstnode *target, bstnode *source)
 {
-    node * n = bst_search(root, key);
+    bstnode tmp;
+    /* copy the struct until we hit `left' */
+    memcpy(&tmp, target, offsetof(bstnode, left));
+    memcpy(target, source, offsetof(bstnode, left));
+    memcpy(target, &tmp, offsetof(bstnode, left));
+}
+
+bstnode * bst_delete(bstnode *root, char * key)
+{
+    bstnode * n = bst_search(root, key);
     return _delete(root, n);
 }
 
-static node * _delete(node *root, node * n)
+static bstnode * _delete(bstnode *root, bstnode * n)
 {
-    node * c;
+    bstnode * c;
     if(n->left == NULL && n->right == NULL){
         if (n == root)
             root = NULL;
@@ -263,12 +281,12 @@ static node * _delete(node *root, node * n)
 }
 
 
-size_t bst_node_size(node *n)
+size_t bst_node_size(bstnode *n)
 {
     return n->size;
 }
 
-size_t bst_node_content(node *n, void * d, size_t s)
+size_t bst_node_content(bstnode *n, void * d, size_t s)
 {
     if (n != NULL && d != NULL){
         s = s == 0 || n->size < s ? n->size : s;
@@ -280,10 +298,10 @@ size_t bst_node_content(node *n, void * d, size_t s)
 
 
 /**
- * get searches for an entry with a given key and returns the node. */
-size_t bst_get(node *r, char * key, void * d, size_t s)
+ * get searches for an entry with a given key and returns the bstnode. */
+size_t bst_get(bstnode *r, char * key, void * d, size_t s)
 {
-    node * n = NULL;
+    bstnode * n = NULL;
     if(r == NULL)
         return 0;
     n = bst_search(r, key);
