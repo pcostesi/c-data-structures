@@ -35,16 +35,20 @@
 #ifndef __LLH
 #define __LLH 1
 
+#include <stddef.h>
+
 typedef struct  List llist;
 
 typedef int (*ll_filter_f)(const void *, size_t);
+typedef int (*ll_eachf)(size_t s, int item, const void * v, void * d);
+
 
 llist * ll_append(llist * list, const void * val, size_t size);
 llist * ll_remove(llist * list);
 llist * ll_new(const void * val, size_t size);
 llist * ll_insert(llist * list, const void * val, size_t size);
 llist * ll_update(llist * list, const void * val, size_t size);
-llist * ll_paste(llist * list, llist * n);
+llist * ll_appendl(llist * list, llist * n);
 llist * ll_next(llist * list);
 llist * ll_prev(llist * list);
 llist * ll_tail(llist * list);
@@ -53,4 +57,5 @@ size_t  ll_get(llist * list, void * buffer, size_t size);
 void    ll_free(llist * list);
 llist * ll_filter(llist * list, ll_filter_f * f);
 llist * ll_split(llist * list, ll_filter_f * f);
+int     ll_each(llist * list, ll_eachf f, void * d);
 #endif

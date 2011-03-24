@@ -89,7 +89,7 @@ llist * ll_head(llist * list){
     return list;
 }
 
-llist * ll_paste(llist * list, llist * n){
+llist * ll_appendl(llist * list, llist * n){
     llist * tail = ll_tail(n);
     if (tail)
         tail->next = list->next;
@@ -115,7 +115,7 @@ llist * ll_insert(llist * list, const void * val, size_t size){
     llist * n = ll_new(val, size);
     if (n == NULL)
         return NULL;
-    return list != NULL ? ll_paste(list, n): n;
+    return list != NULL ? ll_appendl(list, n): n;
 }
 
 void ll_free(llist * list){
@@ -145,7 +145,6 @@ llist * ll_prev(llist * list){
     return list->prev;
 }
 
-
 llist * ll_filter(llist * list, ll_filter_f * f){
     llist * iter;
     llist * result = NULL;
@@ -157,19 +156,29 @@ llist * ll_filter(llist * list, ll_filter_f * f){
     return result;
 }
 
-void ll_split(llist ** list, llist ** newlist, ll_filter_f * f){
-    llist * iter = *list, * aux;
-    llist * tail = ll_tail(*newlist);
+llist * ll_split(llist * list, ll_filter_f * f){
+    llist * iter = list;
+    llist * aux, * newlist, * tail;
 
         while (iter){
             if ((*f)(iter->val, iter->size)){
                 aux = iter;
                 iter = ll_next(iter);
-                *list = ll_remove(aux);
-                tail = ll_paste(tail, aux);
+                list = ll_remove(aux);
+                tail = tail != NULL? ll_appendl(tail, aux) : aux;
             } else {
                 iter = ll_next(iter);
             }
         }
-        *newlist = ll_head(tail);
+        newlist = ll_head(tail);
+    return newlist;
+}
+
+int ll_each(llist * list, ll_eachf f, void * d){
+    int i, n;
+    n = 0;
+    for (i = 0; list != NULL; i++, list = ll_next(list)){
+        n += f(list->size, i, list->val, d);
+    }
+    return n;
 }

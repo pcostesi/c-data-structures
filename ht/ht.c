@@ -61,7 +61,7 @@ struct KVPair{
 };
 
 struct Hashtable{
-    hashf hash_f;
+    ht_hashf hash_f;
     kv ** buckets;
     size_t buckets_size;
     size_t used;
@@ -69,6 +69,7 @@ struct Hashtable{
     size_t max;
     float low;
     float high;
+    unsigned int write_lock:1;
 };
 
 /* (See Chapter 6 @ K&R2) */
@@ -165,13 +166,14 @@ static void _reinsert(ht * t, kv ** list, kv * pair, size_t newsize){
 static void _rehash_all(ht * t, kv ** newlist, size_t newsize){
     kv * item = NULL, * next = NULL;
     int i;
-
+    t->write_lock = 1;
     for (i = 0; i < t->buckets_size; i++){
         for (item = t->buckets[i]; item != NULL; item = next){
             next = item->next;
             _reinsert(t, newlist, item, newsize);
         }
     }
+    t->write_lock = 0;
 }
 
 static ht * _resize(ht * t){
@@ -215,7 +217,7 @@ static kv * _del(kv * list, char * key){
     return NULL;
 }
 
-ht * ht_new(hashf f){
+ht * ht_new(ht_hashf f){
     ht * t = malloc(sizeof(ht));
     if (t == NULL)
         return NULL;
@@ -277,6 +279,9 @@ ht * ht_set(ht * t, char * key, void * val, size_t size){
     kv * n = NULL;
     hashkey hash = HASH(t, key);
 
+    if (t->write_lock)
+        return NULL;
+
     list = t->buckets[hash];
     if(_walk(list, key) != NULL)
         return NULL;
@@ -294,6 +299,8 @@ ht * ht_del(ht * t, char * key){
     kv * list;
     hashkey hash = HASH(t, key);
 
+    if (t->write_lock)
+        return NULL;
     list = _del(t->buckets[hash], key);
     if(list == NULL)
         return NULL;
@@ -319,6 +326,25 @@ void ht_free(ht * t){
         kv_free_list(t->buckets[i]);
     free(t->buckets);
     free(t);
+}
+
+int ht_each(ht * t, ht_eachf f, void * d){
+    kv * item;
+    int i, n;
+    const char * k;
+    const void * v;
+
+    n = 0;
+    t->write_lock = 1;
+    for (i = 0; i < t->buckets_size; i++){
+        for (item = t->buckets[i]; item != NULL; item = item->next){
+            k = item->key;
+            v = item->val;
+            n += f(item->size, k, v, d);
+        }
+    }
+    t->write_lock = 0;
+    return n;
 }
 
 float ht_set_low(ht * t, float ratio){

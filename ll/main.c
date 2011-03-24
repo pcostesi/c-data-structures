@@ -26,6 +26,11 @@
 
 #define BUFFER_SIZE 64
 
+int print_content(size_t size, int i, const void * v, void * d){
+    printf("[%d]>> %*s\n", i, (int) size, (const char *) v);
+    return 0;
+}
+
 void print_haiku(llist * list){
     char buffer[BUFFER_SIZE];
     printf("*~~( Haiku )~~~~~~~*\n");

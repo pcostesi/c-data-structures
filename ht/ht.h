@@ -35,12 +35,15 @@
 #ifndef __HTH
 #define __HTH 1
 
+#include <stddef.h>
+
 typedef unsigned long int hashkey;
-typedef hashkey (*hashf)(char *s);
+typedef hashkey (*ht_hashf)(char *s);
+typedef int (*ht_eachf)(size_t s, const char * k, const void * v, void * d);
 typedef struct Hashtable ht;
 
 void    ht_free(ht * t);
-ht *    ht_new(hashf f);
+ht *    ht_new(ht_hashf f);
 size_t  ht_get(ht * t, char * key, void * buffer, size_t size);
 void *  ht_aget(ht * t, char * key, size_t * size);
 ht *    ht_set(ht * t, char * key, void * buffer, size_t size);
@@ -50,4 +53,5 @@ float   ht_set_low(ht * t, float ratio);
 float   ht_set_high(ht * t, float ratio);
 int     ht_set_min(ht * t, size_t size);
 int     ht_set_max(ht * t, size_t size);
+int     ht_each(ht * t, ht_eachf f, void * d);
 #endif

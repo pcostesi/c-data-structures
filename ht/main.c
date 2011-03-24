@@ -13,6 +13,11 @@ hashkey hasher(char * key){
     return code;
 }
 
+int eachf(size_t size, const char * k, const void * v, void * d){
+    printf("\t'%s' : %*s\n", k, (int) size, (const char *) v);
+    return 0;
+}
+
 int main(int argc, char **argv)
 {
     ht * t = ht_new(NULL);
@@ -44,6 +49,7 @@ int main(int argc, char **argv)
     if (!ht_get(t, "test", &buffer, 0))
         fprintf(stderr, "GET: table MISS\n");
     printf("%s: %s\n", "test", buffer);
+    ht_each(t, eachf, NULL);
 
     ht_free(t);
     return 0;
