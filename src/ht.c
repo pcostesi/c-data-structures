@@ -230,6 +230,7 @@ ht * ht_new(ht_hashf f){
 
     t->buckets_size = HT_MINSIZE;
     t->used = 0;
+    t->write_lock = 0;
     t->min = HT_MINSIZE;
     t->low = LOW;
     t->high = HIGH;
