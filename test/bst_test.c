@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "bst.h"
+#include "CUnit/Basic.h"
 
 #define BUFFER_SIZE 64
 
@@ -33,8 +34,17 @@
                      }
 
 
-int main(int argc, char **argv)
-{
+int init_bst_suite(void) {
+    return 0;
+}
+
+
+int clean_bst_suite(void) {
+    return 0;
+}
+
+void test_bst (void) {
+
     char * test = "this is a test. Let's see if it works!";
     char buffer[BUFFER_SIZE];
     size_t sbuffer;
@@ -44,15 +54,20 @@ int main(int argc, char **argv)
      *  - Add adds an element, and fails when it already exists;
      *  - Set adds an element, updating it if already exists;
      *  - Update only updates existing elements. */
+
+    char * expected = "1234567890";
+
     root = bst_set(root, "test", test, strlen(test) + 1);
-    bst_set(root, "test2", "1234567890", 5);
+    bst_set(root, "test2", expected, 5);
     bst_set(root, "test3", "aucdef", 2);
-    if (bst_add(root, "test", NULL, 0) != NULL)
-        fprintf(stderr, "add should fail with existing keys\n");
+
+    /* add should fail with existing keys */
+    CU_ASSERT(bst_add(root, "test", NULL, 0) == NULL);
+
     bst_update(root, "test3", "abcdef", 4);
 
     bst_nearest(root, "te", buffer, 2);
-    printf("\n%2s\n", buffer);
+    CU_ASSERT( 0 == strncmp(expected, buffer, 2 ) );
 
     /* this is how you query the tree:
      * - set sbuffer to the buffer size;
@@ -66,5 +81,5 @@ int main(int argc, char **argv)
     PRINTN(root, "test");
     PRINTN(root, "test3");
     bst_free(root);
-    return 0;
 }
+

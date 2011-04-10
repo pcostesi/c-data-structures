@@ -19,12 +19,23 @@
 //      MA 02110-1301, USA.
 */
 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "ll.h"
+#include "CUnit/Basic.h"
 
 #define BUFFER_SIZE 64
+
+int init_ll_suite(void) {
+    return 0;
+}
+
+
+int clean_ll_suite(void) {
+    return 0;
+}
 
 int print_content(size_t size, int i, const void * v, void * d){
     printf("[%d]>> %*s\n", i, (int) size, (const char *) v);
@@ -43,8 +54,10 @@ void print_haiku(llist * list){
     printf("*~~~~~~~~~~~~~~~~~~*\n");
 }
 
-int main(int argc, char **argv)
+void test_ll(void)
 {
+    /* TODO: CU_ASSERT me */
+
     llist * list = NULL;
     llist * list2 = NULL;
     char *haiku[] = {"this is unix foo",
@@ -67,5 +80,4 @@ int main(int argc, char **argv)
 
     ll_free(list2);
     ll_free(list);
-    return 0;
 }
