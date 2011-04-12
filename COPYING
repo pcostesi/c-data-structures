@@ -1,0 +1,5 @@
+Tests are provided under GNU GPL v2 or above, while the library files are under the New BSD (3-clause) license. This shoudn't be a problem as tests are considered separate tools and the GPL is compatible with the main license (3-clause BSD).
+
+Dynamic linking to this library and compiling header files into your code is not considered a derivative work.
+
+Tests are covered by the GPL under the premise that tests act as a record of performance, attestable compatibility and bug-tracking system. Keeping them open brings several benefits to security. 
