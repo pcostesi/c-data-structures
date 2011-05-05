@@ -82,13 +82,15 @@ static hashkey hash(char * k)
 }
 
 static void kv_free_node(kv * elem){
+	
     free(elem->val);
     free(elem->key);
     free(elem);
 }
 
 static void kv_free_list(kv * list){
-    kv * aux;
+    kv * aux = NULL;
+    
     for (; list != NULL; list = aux){
         aux = list->next;
         kv_free_node(list);
@@ -124,7 +126,7 @@ static kv * _new_kv(char * key, void * val, size_t size){
     n->next = NULL;
     return n;
 
-    /* take that, Dijkstra! This is a well known pattern called RAII
+    /* This is a pattern called RAII
      * (and cross platform. Using __attribute__((cleanup(n)))
      * is gcc-dependent and not exactly what we want) */
     val_cleanup:

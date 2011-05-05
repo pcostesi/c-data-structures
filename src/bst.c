@@ -77,11 +77,10 @@ void bst_free(bstnode * n){
     }
 }
 
-static bstnode * new_bstnode(char * key, void * val, size_t size)
-{
+static bstnode * new_bstnode(char * key, void * val, size_t size){
     bstnode *n = NULL;
     char * str = NULL;
-    void * mem;
+    void * mem = NULL;
 
     size = size == 0 ? strlen(val) + 1 : size;
     mem = malloc(size);
@@ -105,12 +104,12 @@ static bstnode * new_bstnode(char * key, void * val, size_t size)
         n->size = size;
         n->left = n->right = NULL;
     }
+    
     return n;
 }
 
-static bstnode * insert(bstnode *parent, bstnode *n)
-{
-    int cmp;
+static bstnode * insert(bstnode *parent, bstnode *n){
+    int cmp = 0;
 
     if (parent != NULL && n != NULL){
         cmp = strcmp(parent->str, n->str);
@@ -125,84 +124,89 @@ static bstnode * insert(bstnode *parent, bstnode *n)
 
 }
 
-static bstnode * _update(bstnode *n, char * key, void * val, size_t size)
-{
-    void *aux;
+static bstnode * _update(bstnode *n, char * key, void * val, size_t size){
+    void *aux = NULL;
+    
     size = size == 0 ? strlen(val) + 1 : size;
-    aux = malloc(size);
-    if (val == NULL) return NULL;
-    free(n->val);
+    
+    aux = realloc(n->val, size);
+    if (val == NULL)
+		return NULL;
+    
     memcpy(aux, val, size);
     n->val = aux;
     n->size = size;
+    
     return n;
 }
 
-bstnode * bst_update(bstnode *root, char * key, void * val, size_t size)
-{
-    bstnode *n = bst_search(root, key);
+bstnode * bst_update(bstnode *root, char * key, void * val, size_t size){
+    bstnode * n = NULL;
+    
+    n = bst_search(root, key);
     if (n != NULL)
         n = _update(n, key, val, size);
+    
     return n;
 }
 
-bstnode * bst_add(bstnode *root, char * key, void * val, size_t size)
-{
+bstnode * bst_add(bstnode *root, char * key, void * val, size_t size){
     return _set(root, key, val, size, ADD);
 }
 
-bstnode * bst_set(bstnode *root, char * key, void * val, size_t size)
-{
+bstnode * bst_set(bstnode *root, char * key, void * val, size_t size){
     return _set(root, key, val, size, SET);
 }
 
 /* Although add and set could be `#define'd, you wouldn't be able to use
  * pointers to functions. */
-static bstnode * _set(bstnode *root, char * key, void * val, size_t size, int act)
-{
-    bstnode *n = bst_search(root, key);
+static bstnode * _set(bstnode *root, char * key, void * val, size_t size, int act){
+    bstnode * n = NULL;
+    
+    n = bst_search(root, key);
+    
     if (n == NULL){
         n = new_bstnode(key, val, size);
         if (n != NULL){
             insert(root, n);
         }
     } else {
-        if (act == SET)
-            n = _update(n, key, val, size);
-        else
-            n = NULL;
+		n = (act == SET) ? _update(n, key, val, size) : NULL;
     }
+    
     return n;
 }
 
 bstnode * bst_search(bstnode *root, char * key)
 {
-    int cmp;
+    int cmp = 0;
 
-    if (root != NULL){
-        cmp = strcmp(root->str, key);
-        if (cmp > 0)
-            return bst_search(root->left, key);
-        else if (cmp < 0)
-            return bst_search(root->right, key);
-        else
-            return root;
-    } else {
-        return NULL;
-    }
+    if (root == NULL)
+		return NULL;
+		
+	cmp = strcmp(root->str, key);
+	
+	if (cmp > 0)
+		return bst_search(root->left, key);
+
+	else if (cmp < 0)
+		return bst_search(root->right, key);
+
+	else
+		return root;
 }
 
-bstnode * bst_minimum(bstnode *root){
+bstnode * bst_minimum(bstnode * root){
     return minormax(root, BST_LEFT);
 }
 
-bstnode * bst_maximum(bstnode *root){
+bstnode * bst_maximum(bstnode * root){
     return minormax(root, BST_RIGHT);
 }
 
-static bstnode * minormax(bstnode *root, int i)
-{
+static bstnode * minormax(bstnode * root, int i){
     bstnode *aux = root;
+    
     while (aux != NULL){
         aux = (i == BST_RIGHT) ? aux->right : aux->left;
         root = (aux == NULL) ? root : aux;
@@ -211,12 +215,15 @@ static bstnode * minormax(bstnode *root, int i)
 }
 
 size_t bst_nearest(bstnode * root, char * key, void * d, size_t s){
-    size_t bytes;
+    size_t bytes = 0;
     bstnode * nearest = NULL;
-    int cmp;
+    bstnode * prev = NULL;
+    bstnode * next = NULL;
+    int cmp = 0;
 
     if (root == NULL)
         return 0;
+        
     cmp = strcmp(root->str, key);
     if (cmp > 0)
         bytes = bst_nearest(root->left, key, d, s);
@@ -253,15 +260,14 @@ static void swapData(bstnode *target, bstnode *source)
     memcpy(target, &tmp, offsetof(bstnode, left));
 }
 
-bstnode * bst_delete(bstnode *root, char * key)
-{
+bstnode * bst_delete(bstnode * root, char * key){
     bstnode * n = bst_search(root, key);
     return _delete(root, n);
 }
 
-static bstnode * _delete(bstnode *root, bstnode * n)
-{
-    bstnode * c;
+static bstnode * _delete(bstnode * root, bstnode * n){
+    bstnode * c = NULL;
+    
     if(n->left == NULL && n->right == NULL){
         if (n == root)
             root = NULL;
@@ -286,7 +292,7 @@ size_t bst_node_size(bstnode *n)
     return n->size;
 }
 
-size_t bst_node_content(bstnode *n, void * d, size_t s)
+size_t bst_node_content(bstnode * n, void * d, size_t s)
 {
     if (n != NULL && d != NULL){
         s = s == 0 || n->size < s ? n->size : s;
@@ -299,13 +305,11 @@ size_t bst_node_content(bstnode *n, void * d, size_t s)
 
 /**
  * get searches for an entry with a given key and returns the bstnode. */
-size_t bst_get(bstnode *r, char * key, void * d, size_t s)
-{
-    bstnode * n = NULL;
+size_t bst_get(bstnode * r, char * key, void * d, size_t s){
     if(r == NULL)
         return 0;
-    n = bst_search(r, key);
-    return bst_node_content(n, d, s);
+    
+    return bst_node_content(bst_search(r, key), d, s);
 }
 
 #undef BST_LEFT

@@ -43,19 +43,31 @@ struct List{
 };
 
 llist * ll_new(const void * val, size_t size){
-    llist * list = malloc(sizeof(llist));
+    llist * list	= NULL;
+    void * tmp_val	= NULL;
+    
+	if (val == NULL)
+		return NULL;
+    
+    list = malloc(sizeof(llist));
     if (list == NULL)
         return NULL;
+        
     size = size == 0 ? strlen(val) + 1 : size;
-    list->val = malloc(size);
-    if (list->val == NULL){
+    
+    tmp_val = malloc(size);
+    if (tmp_val == NULL){
         free(list);
         return NULL;
     }
+    
+    memcpy(tmp_val, val, size);
+    
+    list->val  = tmp_val;
     list->size = size;
-    memcpy(list->val, val, size);
     list->next = NULL;
     list->prev = NULL;
+    
     return list;
 }
 
@@ -64,62 +76,103 @@ llist * ll_append(llist * list, const void * val, size_t size){
 }
 
 llist * ll_remove(llist * list){
-    llist * prev = list->prev;
-    llist * next = list->next;
+    llist * prev = NULL;
+    llist * next = NULL;
+    
+    if (list == NULL)
+		return NULL;
+		
+    prev = list->prev;
+    next = list->next;
+    
     if (prev)
         prev->next = next;
+
     if (next)
         next->prev = prev;
+    
     list->prev = NULL;
     list->next = NULL;
+    
+    assert(ll_prev(list) == NULL);
+    assert(ll_next(list) == NULL);
+	assert(ll_prev(next) == prev);
+	assert(ll_next(prev) == next);
+	
     return prev ? prev : next;
 }
 
 llist * ll_tail(llist * list){
+    
     if (list != NULL)
         while(list->next)
             list = list->next;
+    
     return list;
 }
 
 llist * ll_head(llist * list){
+	
     if (list != NULL)
         while(list->prev)
             list = list->prev;
+    
     return list;
 }
 
 llist * ll_appendl(llist * list, llist * n){
-    llist * tail = ll_tail(n);
-    if (tail)
+    llist * tail = NULL;
+    
+    if (list == NULL)
+		return NULL;
+		
+    tail = ll_tail(n);
+    
+    if (tail != NULL)
         tail->next = list->next;
-    if (list->next)
+    
+    if (list->next != NULL)
         list->next->prev = tail;
-    n->prev = list;
+    
+    if (n != NULL)
+		n->prev = list;
     list->next = n;
+    
     return n;
 }
 
 llist * ll_update(llist * list, const void * val, size_t size){
-    void * aux = malloc(size);
+    void * aux = NULL;
+    
+    if (list == NULL || val == NULL || size == 0)
+		return NULL;
+    
+    assert(list->val != NULL);
+    
+    aux = realloc(list->val, size);
     if (aux == NULL)
         return NULL;
-    free(list->val);
+    
     list->val = aux;
     memcpy(aux, val, size);
     list->size = size;
+    
     return list;
 }
 
 llist * ll_insert(llist * list, const void * val, size_t size){
-    llist * n = ll_new(val, size);
+    llist * n = NULL;
+    
+    n = ll_new(val, size);
     if (n == NULL)
         return NULL;
+        
     return list != NULL ? ll_appendl(list, n): n;
 }
 
 void ll_free(llist * list){
-    llist * aux;
+    llist * aux = NULL;
+    
     for(; list != NULL; list = aux){
         aux = list->next;
         free(list->val);
@@ -128,26 +181,38 @@ void ll_free(llist * list){
 }
 
 size_t ll_get(llist * list, void * buffer, size_t size){
+    
     /* get at most size bytes, unless size is zero (then we default to
      * list->size. */
     if (list == NULL || buffer == NULL)
         return 0;
-    size = size == 0 || list->size < size ? list->size : size;
+    
+    size = (size == 0 || list->size < size) ? list->size : size;
     memcpy(buffer, list->val, size);
+    
     return size;
 }
 
 llist * ll_next(llist * list){
-    return list->next;
+	assert(list != NULL);
+	
+    return list ? list->next : NULL;
 }
 
 llist * ll_prev(llist * list){
-    return list->prev;
+	assert(list != NULL);
+	
+    return list ? list->prev : NULL;
 }
 
 llist * ll_filter(llist * list, ll_filter_f * f){
-    llist * iter;
-    llist * result = NULL;
+    llist * iter 	= NULL;
+    llist * result 	= NULL;
+    
+    assert(f != NULL);
+    
+    if (list == NULL || f == NULL)
+		return NULL;
 
     for (iter = list; iter != NULL; iter = ll_next(iter))
         if ((*f)(iter->val, iter->size))
@@ -157,28 +222,41 @@ llist * ll_filter(llist * list, ll_filter_f * f){
 }
 
 llist * ll_split(llist * list, ll_filter_f * f){
-    llist * iter = list;
-    llist * aux, * newlist, * tail;
+    llist * iter 	= list;
+    llist * aux 	= NULL;
+    llist * newlist = NULL;
+    llist * tail 	= NULL;
+	
+	assert(f != NULL);
+	
+	if (list == NULL || f == NULL)
+		return NULL;
 
-        while (iter){
-            if ((*f)(iter->val, iter->size)){
-                aux = iter;
-                iter = ll_next(iter);
-                list = ll_remove(aux);
-                tail = tail != NULL? ll_appendl(tail, aux) : aux;
-            } else {
-                iter = ll_next(iter);
-            }
-        }
-        newlist = ll_head(tail);
+	while (iter){
+		if ((*f)(iter->val, iter->size)){
+			aux = iter;
+			iter = ll_next(iter);
+			list = ll_remove(aux);
+			tail = tail != NULL? ll_appendl(tail, aux) : aux;
+		} else {
+			iter = ll_next(iter);
+		}
+	}
+	newlist = ll_head(tail);
+	
     return newlist;
 }
 
 int ll_each(llist * list, ll_eachf f, void * d){
-    int i, n;
-    n = 0;
+    int i = 0;
+    int n = 0;
+    
+    if (list == NULL || f == NULL)
+		return NULL;
+    
     for (i = 0; list != NULL; i++, list = ll_next(list)){
         n += f(list->size, i, list->val, d);
     }
+    
     return n;
 }
