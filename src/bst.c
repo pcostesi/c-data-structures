@@ -233,25 +233,21 @@ size_t bst_nearest(bstnode * root, char * key, void * d, size_t s){
         nearest = root;
 
     if (nearest == NULL && bytes == 0){
-        if (root->left && root->right){
-            cmp = strcmp(root->left->str, root->right->str);
-            nearest = cmp <= 0 ? root->left : root->right;
-        } else {
-            nearest = root->left != NULL ? root->left : root->right;
-        }
+		prev = bst_maximum(root->right);
+		next = bst_minimum(root->left);
+		
+        if (prev && left)
+            nearest = strcmp(prev->str, next->str) <= 0 ? prev : next;        
+        else if (root->left)
+            nearest = bst_minimum(root->left);
+        else
+			nearest = bst_maximum(root->right);
     }
 
-    if (nearest == NULL)
-        return 0;
-
-    bytes = nearest->size;
-    s = s <= bytes ? s : bytes;
-    memcpy(d, nearest->val, s);
-
-    return bytes;
+    return nearest != NULL ? bst_node_content(nearest, d, s) : 0;
 }
 
-static void swapData(bstnode *target, bstnode *source)
+static void swapData(bstnode * target, bstnode * source)
 {
     bstnode tmp;
     /* copy the struct until we hit `left' */
