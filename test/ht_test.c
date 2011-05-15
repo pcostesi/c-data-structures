@@ -51,7 +51,7 @@ unsigned hasher(void * key, size_t len){
     
     for (;len > 0 && *((char *) key) != 0; key++, len--)
         code += *((char *) key);
-    return code;
+    return 0;
 }
 
 int eachf(const void * k, size_t ks, const void * v, size_t size, void * d){

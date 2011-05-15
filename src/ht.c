@@ -79,7 +79,7 @@ struct Hashtable{
 static unsigned hash(void * k, size_t s)
 {
     unsigned r = 0;
-    for (; *((char *) k) != 0; k++)
+    for (; s > 0 && *((char *) k) != 0; k++, s--)
         r = *((char *) k) + 31 * r;
     return r % UINT_MAX;
 }
