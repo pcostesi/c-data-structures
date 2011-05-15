@@ -292,9 +292,12 @@ size_t ht_get(ht * t, void * key, size_t s, void * buffer, size_t size){
         return 0;
         
     size = size > list->size ? list->size : size;
-    memcpy(buffer, list->val, size);
-
-    return size == 0 ? list->size : size;
+    if (size && buffer != NULL){
+		memcpy(buffer, list->val, size);
+		return size;
+	} else {
+		return list->size;
+	}
 }
 
 ht * ht_set(ht * t, void * key, size_t s, void * val, size_t size){
@@ -408,3 +411,4 @@ int ht_set_max(ht * t, size_t size){
 }
 
 #undef HASH
+#undef MIN
