@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ll.h"
+#include <assert.h>
 
 struct List{
     size_t size;
@@ -85,19 +86,22 @@ llist * ll_remove(llist * list){
     prev = list->prev;
     next = list->next;
     
-    if (prev)
+    if (prev){
         prev->next = next;
+		assert(ll_next(prev) == next);
+	}
 
-    if (next)
+    if (next){
         next->prev = prev;
+        assert(ll_prev(next) == prev);
+	
+    }
     
     list->prev = NULL;
     list->next = NULL;
     
     assert(ll_prev(list) == NULL);
     assert(ll_next(list) == NULL);
-	assert(ll_prev(next) == prev);
-	assert(ll_next(prev) == next);
 	
     return prev ? prev : next;
 }
@@ -194,13 +198,11 @@ size_t ll_get(llist * list, void * buffer, size_t size){
 }
 
 llist * ll_next(llist * list){
-	assert(list != NULL);
-	
+		
     return list ? list->next : NULL;
 }
 
 llist * ll_prev(llist * list){
-	assert(list != NULL);
 	
     return list ? list->prev : NULL;
 }
@@ -252,7 +254,7 @@ int ll_each(llist * list, ll_eachf f, void * d){
     int n = 0;
     
     if (list == NULL || f == NULL)
-		return NULL;
+		return 0;
     
     for (i = 0; list != NULL; i++, list = ll_next(list)){
         n += f(list->size, i, list->val, d);
