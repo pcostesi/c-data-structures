@@ -68,23 +68,23 @@ void test_ht(void)
     bsize = 1 + strlen(buffer);
 
     /* Test Get */
-    CU_ASSERT( NULL != ht_set(t, key1, 4, "this is a test string", 0));
-    CU_ASSERT(ht_get(t, key1, 4, &buffer, bsize));
+    CU_ASSERT( NULL != ht_set(t, key1, 0, "this is a test string", 0));
+    CU_ASSERT(ht_get(t, key1, 0, &buffer, bsize));
 
     /* Test Set */
-    CU_ASSERT(NULL == ht_set(t, "test", 4, "t", 0));
+    CU_ASSERT(NULL == ht_set(t, "test", 0, "t", 0));
 
     /* Test update */
-    CU_ASSERT(NULL != ht_update(t, "test", 4, "this is another test string", 0));
-    CU_ASSERT(ht_get(t, "test", 4, &buffer, bsize));
+    CU_ASSERT(NULL != ht_update(t, "test", 0, "this is another test string", 0));
+    CU_ASSERT(ht_get(t, "test", 0, &buffer, bsize));
 
     /* Freeing the table */
     ht_free(t);
 
 
     t = ht_new(hasher);
-    CU_ASSERT(ht_set(t, "test", 4, "this is a test string", 0) != NULL);
-    CU_ASSERT(ht_get(t, "test", 4, &buffer, 0));
+    CU_ASSERT(ht_set(t, "test", 0, "this is a test string", 0) != NULL);
+    CU_ASSERT(ht_get(t, "test", 0, &buffer, 0));
     
     /* TODO: Assert me*/
     ht_each(t, eachf, NULL);

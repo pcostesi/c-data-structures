@@ -41,7 +41,7 @@
 #define LOW 0.4
 #define HIGH 0.75
 #define MAX ULONG_MAX
-#define HT_MINSIZE (1 << 10)
+#define HT_MINSIZE (1 << 8)
 /* I should *really* use an enum with primes for each table size */
 #define HASH(T, K, S)	((T)->hash_f((K), (S)) % (T)->buckets_size)
 #define MIN(A, B)		((A) < (B) ? (A) : (B))
@@ -263,6 +263,7 @@ void * ht_aget(ht * t, void * key, size_t s, size_t * size){
     void * data = NULL;
     size_t bytes = 0;
 
+	s = s == 0 ? strlen((char *) key) : s;
     list = _walk(t->buckets[hash], key, s);
     if (list == NULL)
         return NULL;
@@ -282,8 +283,10 @@ void * ht_aget(ht * t, void * key, size_t s, size_t * size){
 
 size_t ht_get(ht * t, void * key, size_t s, void * buffer, size_t size){
     kv * list = NULL;
-    unsigned hash = HASH(t, key, s);
-
+    unsigned hash = 0;
+    
+    s = s == 0 ? strlen((char *) key) : s;
+    hash = HASH(t, key, s);
     list = _walk(t->buckets[hash], key, s);
     if (list == NULL)
         return 0;
@@ -297,17 +300,21 @@ size_t ht_get(ht * t, void * key, size_t s, void * buffer, size_t size){
 ht * ht_set(ht * t, void * key, size_t s, void * val, size_t size){
     kv * list = NULL;
     kv * n = NULL;
-    unsigned hash = HASH(t, key, s);
-
+    unsigned hash = 0;
+    
+    s = s == 0 ? strlen((char *) key) : s;
+    hash = HASH(t, key, s);
     if (t->write_lock)
         return NULL;
 
     list = t->buckets[hash];
     if(_walk(list, key, s) != NULL)
         return NULL;
+        
     n = _append(list, key, s, val, size);
     if (n == NULL)
         return NULL;
+        
     t->buckets[hash] = n;
     t->used++;
 
@@ -321,7 +328,8 @@ ht * ht_del(ht * t, void * key, size_t s){
 
     if (t->write_lock)
         return NULL;
-        
+	
+	s = s == 0 ? strlen((char *) key) : s;
     list = _del(t->buckets[hash], key, s);
     if(list == NULL)
         return NULL;
@@ -333,8 +341,12 @@ ht * ht_del(ht * t, void * key, size_t s){
 }
 
 ht * ht_update(ht * t, void * key, size_t s, void * buffer, size_t size){
-    unsigned hash = HASH(t, key, s);
-    kv * list = _walk(t->buckets[hash], key, s);
+    unsigned hash = 0;
+    kv * list = NULL;
+    
+    s = s == 0 ? strlen((char *) key) : s;
+    hash = HASH(t, key, s);
+    list = _walk(t->buckets[hash], key, s);
 
     if(!_update(list, buffer, size))
         return NULL;
