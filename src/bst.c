@@ -236,7 +236,7 @@ size_t bst_nearest(bstnode * root, char * key, void * d, size_t s){
 		prev = bst_maximum(root->right);
 		next = bst_minimum(root->left);
 		
-        if (prev && left)
+        if (prev && next)
             nearest = strcmp(prev->str, next->str) <= 0 ? prev : next;        
         else if (root->left)
             nearest = bst_minimum(root->left);
