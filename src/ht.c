@@ -35,6 +35,7 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include "ht.h"
 
 #define LOW 0.4
@@ -42,7 +43,8 @@
 #define MAX ULONG_MAX
 #define HT_MINSIZE (1 << 10)
 /* I should *really* use an enum with primes for each table size */
-#define HASH(T, K) (T->hash_f(K) % T->buckets_size)
+#define HASH(T, K, S)	((T)->hash_f((K), (S)) % (T)->buckets_size)
+#define MIN(A, B)		((A) < (B) ? (A) : (B))
 
 typedef struct KVPair kv;
 
@@ -54,7 +56,8 @@ static unsigned int PRIMES[] = {  0, 0, 0, 0, 0, 53, 97, 193, 389, 769, \
                                 805306457, 1610612741};
 
 struct KVPair{
-    char * key;
+    void * key;
+    size_t key_len;
     void * val;
     size_t size;
     struct KVPair * next;
@@ -73,12 +76,20 @@ struct Hashtable{
 };
 
 /* (See Chapter 6 @ K&R2) */
-static hashkey hash(char * k)
+static unsigned hash(void * k, size_t s)
 {
-    hashkey r = 0;
-    for (; *k != 0; k++)
-        r = *k + 31 * r;
-    return r % ULONG_MAX;
+    unsigned r = 0;
+    for (; *((char *) k) != 0; k++)
+        r = *((char *) k) + 31 * r;
+    return r % UINT_MAX;
+}
+
+static int key_is_node(void * key, size_t size, kv * node){
+	assert(node != NULL);
+	
+	if (size != node->key_len)
+		return 0;
+	return !memcmp(key, node->key, MIN(size, node->key_len));
 }
 
 static void kv_free_node(kv * elem){
@@ -97,22 +108,23 @@ static void kv_free_list(kv * list){
     }
 }
 
-static kv * _walk(kv * list, char * key){
-    while(list != NULL && strcmp(key, list->key))
+static kv * _walk(kv * list, void * key, size_t n){
+    
+    while(list != NULL && !key_is_node(key, n, list))
         list = list->next;
+    
     return list;
 }
 
-static kv * _new_kv(char * key, void * val, size_t size){
-    size_t str_size = 0;
+static kv * _new_kv(void * key, size_t ks, void * val, size_t size){
     kv * n = NULL;
 
     n = malloc(sizeof(kv));
     if (n == NULL)
         goto nod_cleanup;
 
-    str_size = strlen(key) + 1;
-    n->key = malloc(str_size);
+	n->key_len = (ks == 0) ? strlen((char *) ks) : ks;
+    n->key = malloc(n->key_len);
     if(n->key == NULL)
         goto str_cleanup;
 
@@ -121,7 +133,7 @@ static kv * _new_kv(char * key, void * val, size_t size){
     if(n->val == NULL)
         goto val_cleanup;
 
-    memcpy(n->key, key, str_size);
+    memcpy(n->key, key, n->key_len);
     memcpy(n->val, val, n->size);
     n->next = NULL;
     return n;
@@ -137,8 +149,8 @@ static kv * _new_kv(char * key, void * val, size_t size){
         return NULL;
 }
 
-static kv * _append(kv * list, char * key, void * val, size_t size){
-    kv * n = _new_kv(key, val, size);
+static kv * _append(kv * list, void * key, size_t s, void * val, size_t size){
+    kv * n = _new_kv(key, s, val, size);
     if (n != NULL)
         n->next = list;
     return n;
@@ -160,14 +172,17 @@ static int _update(kv * elem, void * val, size_t size){
 }
 
 static void _reinsert(ht * t, kv ** list, kv * pair, size_t newsize){
-    hashkey hash = t->hash_f(pair->key) % newsize;
+	
+    unsigned hash = t->hash_f(pair->key, pair->key_len) % newsize;
     pair->next = list[hash];
     list[hash] = pair;
 }
 
 static void _rehash_all(ht * t, kv ** newlist, size_t newsize){
-    kv * item = NULL, * next = NULL;
-    int i;
+    kv * item = NULL;
+    kv * next = NULL;
+    int i = 0;
+    
     t->write_lock = 1;
     for (i = 0; i < t->buckets_size; i++){
         for (item = t->buckets[i]; item != NULL; item = next){
@@ -199,11 +214,12 @@ static ht * _resize(ht * t){
     return t;
 }
 
-static kv * _del(kv * list, char * key){
+static kv * _del(kv * list, void * key, size_t s){
     kv * orig = list;
     kv * prev = NULL;
     kv * ret = NULL;
-    for (; list != NULL && !strcmp(list->key, key); list = list->next)
+    
+    for (; list != NULL && !key_is_node(key, s, list); list = list->next)
         prev = list;
 
     if (list != NULL){
@@ -241,13 +257,13 @@ ht * ht_new(ht_hashf f){
     return t;
 }
 
-void * ht_aget(ht * t, char * key, size_t * size){
+void * ht_aget(ht * t, void * key, size_t s, size_t * size){
     kv * list = NULL;
-    hashkey hash = HASH(t, key);
+    unsigned hash = HASH(t, key, s);
     void * data = NULL;
     size_t bytes = 0;
 
-    list = _walk(t->buckets[hash], key);
+    list = _walk(t->buckets[hash], key, s);
     if (list == NULL)
         return NULL;
 
@@ -264,31 +280,32 @@ void * ht_aget(ht * t, char * key, size_t * size){
     return memcpy(data, list->val, bytes);
 }
 
-size_t ht_get(ht * t, char * key, void * buffer, size_t size){
+size_t ht_get(ht * t, void * key, size_t s, void * buffer, size_t size){
     kv * list = NULL;
-    hashkey hash = HASH(t, key);
+    unsigned hash = HASH(t, key, s);
 
-    list = _walk(t->buckets[hash], key);
+    list = _walk(t->buckets[hash], key, s);
     if (list == NULL)
         return 0;
+        
     size = size > list->size ? list->size : size;
     memcpy(buffer, list->val, size);
 
     return size == 0 ? list->size : size;
 }
 
-ht * ht_set(ht * t, char * key, void * val, size_t size){
+ht * ht_set(ht * t, void * key, size_t s, void * val, size_t size){
     kv * list = NULL;
     kv * n = NULL;
-    hashkey hash = HASH(t, key);
+    unsigned hash = HASH(t, key, s);
 
     if (t->write_lock)
         return NULL;
 
     list = t->buckets[hash];
-    if(_walk(list, key) != NULL)
+    if(_walk(list, key, s) != NULL)
         return NULL;
-    n = _append(list, key, val, size);
+    n = _append(list, key, s, val, size);
     if (n == NULL)
         return NULL;
     t->buckets[hash] = n;
@@ -298,24 +315,26 @@ ht * ht_set(ht * t, char * key, void * val, size_t size){
     return _resize(t);
 }
 
-ht * ht_del(ht * t, char * key){
-    kv * list;
-    hashkey hash = HASH(t, key);
+ht * ht_del(ht * t, void * key, size_t s){
+    kv * list = NULL;
+    unsigned hash = HASH(t, key, s);
 
     if (t->write_lock)
         return NULL;
-    list = _del(t->buckets[hash], key);
+        
+    list = _del(t->buckets[hash], key, s);
     if(list == NULL)
         return NULL;
+    
     t->buckets[hash] = list;
     t->used--;
 
     return _resize(t);
 }
 
-ht * ht_update(ht * t, char * key, void * buffer, size_t size){
-    hashkey hash = HASH(t, key);
-    kv * list = _walk(t->buckets[hash], key);
+ht * ht_update(ht * t, void * key, size_t s, void * buffer, size_t size){
+    unsigned hash = HASH(t, key, s);
+    kv * list = _walk(t->buckets[hash], key, s);
 
     if(!_update(list, buffer, size))
         return NULL;
@@ -332,18 +351,14 @@ void ht_free(ht * t){
 }
 
 int ht_each(ht * t, ht_eachf f, void * d){
-    kv * item;
-    int i, n;
-    const char * k;
-    const void * v;
+    kv * item = NULL;
+    int i = 0;
+    int n = 0;
 
-    n = 0;
     t->write_lock = 1;
     for (i = 0; i < t->buckets_size; i++){
-        for (item = t->buckets[i]; item != NULL; item = item->next){
-            k = item->key;
-            v = item->val;
-            n += f(item->size, k, v, d);
+        for (item = t->buckets[i]; !n && item != NULL; item = item->next){
+            n = f(item->key, item->key_len, item->val, item->size, d);
         }
     }
     t->write_lock = 0;
