@@ -54,18 +54,6 @@ int print_content(size_t size, int i, const void * v, void * d){
     return 0;
 }
 
-void print_haiku(llist * list){
-    char buffer[BUFFER_SIZE];
-    printf("*~~( Haiku )~~~~~~~*\n");
-    printf("~                  ~\n");
-    for(; list != NULL; list = ll_next(list)){
-        ll_get(list, buffer, BUFFER_SIZE);
-        printf("~ %-16s ~\n", buffer);
-    }
-    printf("~                  ~\n");
-    printf("*~~~~~~~~~~~~~~~~~~*\n");
-}
-
 void test_ll(void)
 {
     /* TODO: CU_ASSERT me */
@@ -79,16 +67,11 @@ void test_ll(void)
     ll_append(list, haiku[1], strlen(haiku[1]) + 1);
     ll_append(list, haiku[2], strlen(haiku[2]) + 1);
 
-    print_haiku(list);
-
     ll_update(ll_prev(ll_tail(list)), "ll_update tests", \
             strlen("ll_update tests") + 1);
 
-    print_haiku(list);
-
     list2 = list;
     list = ll_remove(list);
-    print_haiku(list);
 
     ll_free(list2);
     ll_free(list);
