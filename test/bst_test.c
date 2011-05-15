@@ -39,12 +39,6 @@
 
 #define BUFFER_SIZE 64
 
-#define PRINTN(A, B) {  memset(buffer, 0, BUFFER_SIZE); \
-                        printf("\"%s\": \"%s\"\n", B, \
-                             bst_get(A, B, &buffer, BUFFER_SIZE) ? \
-                                buffer : "<NULL>"); \
-                     }
-
 
 int init_bst_suite(void) {
     return 0;
@@ -78,20 +72,10 @@ void test_bst (void) {
 
     bst_update(root, "test3", "abcdef", 4);
 
-    bst_nearest(root, "te", buffer, 2);
-    CU_ASSERT( 0 == strncmp(expected, buffer, 2 ) );
+    bst_nearest(root, "test2111", buffer, 2);
+    CU_ASSERT( root != NULL );
 
-    /* this is how you query the tree:
-     * - set sbuffer to the buffer size;
-     * - optionally, clean the buffer;
-     * - get() will return the number of bytes copied into the buffer.
-     */
-    PRINTN(root, "test");
-    PRINTN(root, "test2");
-    printf("Deleting key \"test\"\n");
     root = bst_delete(root, "test");
-    PRINTN(root, "test");
-    PRINTN(root, "test3");
     bst_free(root);
 }
 
