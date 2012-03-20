@@ -23,5 +23,6 @@ lib: $(SRC)bst.o $(SRC)ht.o $(SRC)ll.o $(SRC)sd.o
 clean:
 	- rm $(SRC)*.o $(TEST)*.o ds.a $(TEST)test
 
-
+runtest:
+	test/test
 

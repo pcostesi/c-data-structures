@@ -145,27 +145,6 @@ static sd * _resize(sd * t){
     return t;
 }
 
-static sd_pair * _del(sd_pair * list, sd_key key){
-    sd_pair * orig = list;
-    sd_pair * prev = NULL;
-    sd_pair * ret = NULL;
-    
-    for (; list != NULL && !key_is_node(key, list); list = list->next)
-        prev = list;
-
-    if (list != NULL){
-        if (orig == list){
-            ret = list->next;
-            free(list);
-            return ret;
-        } else {
-            ret = orig;
-            prev->next = list->next;
-        }
-    }
-    return NULL;
-}
-
 sd * sd_new(size_t min, size_t max, float low, float high){
     sd * t = malloc(sizeof(sd));
     
@@ -231,18 +210,29 @@ sd * sd_set(sd * t, sd_key key, void * val){
 }
 
 sd * sd_del(sd * t, sd_key key){
+	assert(t != NULL);
     sd_pair * list = NULL;
+    sd_pair * prev = NULL;
     unsigned hash = HASH(t, key);
-
+    
     if (t->write_lock)
         return NULL;
+        
+    list = t->buckets[hash];
+    for (; list != NULL && !key_is_node(key, list); list = list->next)
+        prev = list;
 	
-	list = _del(t->buckets[hash], key);
-    if(list == NULL)
-        return NULL;
-    
-    t->buckets[hash] = list;
-    t->used--;
+	if (list == NULL)
+		return NULL;
+	
+	if (t->buckets[hash] == list)
+		t->buckets[hash] = list->next;
+	else
+		prev->next = list->next;
+	
+	free(list);
+	
+	t->used--;
 
     return _resize(t);
 }
@@ -262,7 +252,7 @@ sd * sd_update(sd * t, sd_key key, void * val){
 }
 
 void sd_free(sd * t){
-    int i;
+    int i = 0;
     for (i = 0; i < t->buckets_size; i++)
         kv_free_list(t->buckets[i]);
     free(t->buckets);

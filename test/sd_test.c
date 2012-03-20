@@ -45,21 +45,31 @@ int clean_sd_suite(void) {
     return 0;
 }
 
-
 int eachf_sd(sd_key k, const void * v, void * d){
-	puts("hello\n");
     return 0;
 }
 
 void test_sd(void)
 {
-	sd_key key = {0};
+	sd_key key = {10, 10, 42, 42, 0};
+	char * message = "hello world";
+	char * message2 = "hello worldd";
     sd * t = sd_new(SD_DEFAULTS);
     CU_ASSERT(NULL != t);
-    CU_ASSERT(NULL == sd_get(t, key));
     
+    /* test that we fail when we need to fail */
+    CU_ASSERT(NULL == sd_get(t, key));
+    CU_ASSERT(NULL == sd_update(t, key, message));
+	CU_ASSERT(NULL == sd_del(t, key));
+    
+    /*set the dict key*/
+    CU_ASSERT(NULL != sd_set(t, key, message));
+    
+    CU_ASSERT(message == sd_get(t, key));
+    CU_ASSERT(NULL != sd_update(t, key, message2));
     sd_each(t, eachf_sd, NULL);
-
+	CU_ASSERT(NULL != sd_del(t, key));
+    
     sd_free(t);
 }
 
