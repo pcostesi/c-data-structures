@@ -1,7 +1,7 @@
 /*
- *      main.c
+ *      sd.h
  *
- *      Copyright 2010:
+ *      Copyright 2012:
  *          Pablo Alejandro Costesich <pcostesi@alu.itba.edu.ar>
  *
  *      Redistribution and use in source and binary forms, with or without
@@ -31,51 +31,37 @@
  *      OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "CUnit/Basic.h"
 
-int init_bst_suite(void);
-int init_ll_suite(void);
-int init_sd_suite(void);
-int init_ht_suite(void);
+#ifndef __HSD
+#define __HSD 1
 
-void test_bst(void);
-void test_ht(void);
-void test_sd(void);
-void test_ll(void);
 
-int clean_bst_suite(void);
-int clean_ll_suite(void);
-int clean_sd_suite(void);
-int clean_ht_suite(void);
+#include <stddef.h>
+#include <limits.h>
 
-int main(int argc, char **argv)
-{
-    /* Initialize the CUnit test registry */
-    if ( CUE_SUCCESS != CU_initialize_registry())
-        return CU_get_error();
 
-    /* add a suite to the registry */
-    CU_pSuite bstSuite = CU_add_suite("BST Suite", init_bst_suite, clean_bst_suite);
-    CU_pSuite llSuite = CU_add_suite("LinkedList Suite", init_ll_suite, clean_ll_suite);
-    CU_pSuite htSuite = CU_add_suite("HashTable Suite", init_ht_suite, clean_ht_suite);
-    CU_pSuite sdSuite = CU_add_suite("Simple Dictionary Suite", init_sd_suite, clean_sd_suite);
+#define SD_KEY_SIZE (5 * sizeof(int))
+#define SD_LOW 0.4
+#define SD_HIGH 0.75
+#define SD_MAX ULONG_MAX
+#define SD_MIN (1 << 8)
+#define SD_DEFAULTS SD_MIN, SD_MAX, SD_LOW, SD_HIGH
 
-    if ( NULL == bstSuite || NULL == llSuite || NULL == htSuite || NULL == sdSuite ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
 
-    /*add the test cases to the suites */
-    if ((NULL == CU_add_test(bstSuite, "test_bst", test_bst)) || 
-        (NULL == CU_add_test(llSuite, "test_ll", test_ll)) ||
-        (NULL == CU_add_test(sdSuite, "test_sd", test_sd)) ||
-        (NULL == CU_add_test(htSuite, "test_ht", test_ht)) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+typedef unsigned char sd_key[SD_KEY_SIZE];
 
-    CU_basic_set_mode(CU_BRM_VERBOSE);
-    CU_basic_run_tests();
-    CU_cleanup_registry();
-    return CU_get_error();
-}
+typedef int (*sd_eachf)(sd_key k, const void * v, void * d);
+typedef struct SimpleDict sd;
+
+sd * 	sd_new(size_t min, size_t max, float low, float high);
+void    sd_free(sd * t);
+void *  sd_get(sd * t, sd_key key);
+sd *    sd_set(sd * t, sd_key key, void * val);
+sd *    sd_del(sd * t, sd_key key);
+sd *    sd_update(sd * t, sd_key key, void * val);
+float   sd_set_low(sd * t, float ratio);
+float   sd_set_high(sd * t, float ratio);
+int     sd_set_min(sd * t, size_t size);
+int     sd_set_max(sd * t, size_t size);
+int     sd_each(sd * t, sd_eachf f, void * d);
+#endif

@@ -1,7 +1,7 @@
 /*
- *      main.c
+ *      sd_test.c
  *
- *      Copyright 2010:
+ *      Copyright 2012:
  *          Pablo Alejandro Costesich <pcostesi@alu.itba.edu.ar>
  *
  *      Redistribution and use in source and binary forms, with or without
@@ -31,51 +31,35 @@
  *      OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdio.h>
+#include <string.h>
+#include "sd.h"
+
 #include "CUnit/Basic.h"
 
-int init_bst_suite(void);
-int init_ll_suite(void);
-int init_sd_suite(void);
-int init_ht_suite(void);
-
-void test_bst(void);
-void test_ht(void);
-void test_sd(void);
-void test_ll(void);
-
-int clean_bst_suite(void);
-int clean_ll_suite(void);
-int clean_sd_suite(void);
-int clean_ht_suite(void);
-
-int main(int argc, char **argv)
-{
-    /* Initialize the CUnit test registry */
-    if ( CUE_SUCCESS != CU_initialize_registry())
-        return CU_get_error();
-
-    /* add a suite to the registry */
-    CU_pSuite bstSuite = CU_add_suite("BST Suite", init_bst_suite, clean_bst_suite);
-    CU_pSuite llSuite = CU_add_suite("LinkedList Suite", init_ll_suite, clean_ll_suite);
-    CU_pSuite htSuite = CU_add_suite("HashTable Suite", init_ht_suite, clean_ht_suite);
-    CU_pSuite sdSuite = CU_add_suite("Simple Dictionary Suite", init_sd_suite, clean_sd_suite);
-
-    if ( NULL == bstSuite || NULL == llSuite || NULL == htSuite || NULL == sdSuite ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-
-    /*add the test cases to the suites */
-    if ((NULL == CU_add_test(bstSuite, "test_bst", test_bst)) || 
-        (NULL == CU_add_test(llSuite, "test_ll", test_ll)) ||
-        (NULL == CU_add_test(sdSuite, "test_sd", test_sd)) ||
-        (NULL == CU_add_test(htSuite, "test_ht", test_ht)) ) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-
-    CU_basic_set_mode(CU_BRM_VERBOSE);
-    CU_basic_run_tests();
-    CU_cleanup_registry();
-    return CU_get_error();
+int init_sd_suite(void) {
+    return 0;
 }
+
+int clean_sd_suite(void) {
+    return 0;
+}
+
+
+int eachf_sd(sd_key k, const void * v, void * d){
+	puts("hello\n");
+    return 0;
+}
+
+void test_sd(void)
+{
+	sd_key key = {0};
+    sd * t = sd_new(SD_DEFAULTS);
+    CU_ASSERT(NULL != t);
+    CU_ASSERT(NULL == sd_get(t, key));
+    
+    sd_each(t, eachf_sd, NULL);
+
+    sd_free(t);
+}
+
