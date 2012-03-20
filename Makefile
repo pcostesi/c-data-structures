@@ -1,6 +1,6 @@
 IDIR = src/include
 CFLAGS = -I$(IDIR)
-CC = gcc
+CC = clang
 
 SRC= src/
 TEST= test/
@@ -12,10 +12,10 @@ LIBS=-lcunit
 
 all: lib test
 
-test: $(SRC)bst.o $(SRC)ht.o $(SRC)ll.o $(TEST)bst_test.o $(TEST)ht_test.o $(TEST)ll_test.o
-	$(CC) -o $(TEST)test $(TEST)main.c $(SRC)bst.o $(SRC)ht.o $(SRC)ll.o $(TEST)bst_test.o $(TEST)ht_test.o $(TEST)ll_test.o $(LIBS)  -I $(SRC)include
+test: $(SRC)bst.o $(SRC)ht.o $(SRC)ll.o $(SRC)sd.o $(TEST)bst_test.o $(TEST)ht_test.o $(TEST)ll_test.o $(TEST)sd_test.o
+	$(CC) -o $(TEST)test $(TEST)main.c $(SRC)bst.o $(SRC)ht.o $(SRC)ll.o $(SRC)sd.o $(TEST)sd_test.o $(TEST)bst_test.o $(TEST)ht_test.o $(TEST)ll_test.o $(LIBS)  -I $(SRC)include
 
-lib: $(SRC)bst.o $(SRC)ht.o $(SRC)ll.o
+lib: $(SRC)bst.o $(SRC)ht.o $(SRC)ll.o $(SRC)sd.o
 	ar rcs ds.a $(SRC)bst.o $(SRC)ht.o $(SRC)ll.o
 
 .PHONY: clean
