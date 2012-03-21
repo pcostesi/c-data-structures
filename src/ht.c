@@ -374,8 +374,6 @@ int ht_each(ht * t, ht_eachf f, void * d){
     for (i = 0; i < t->buckets_size; i++){
         for (item = t->buckets[i]; !n && item != NULL; item = item->next){
             n = f(item->key, item->key_len, item->val, item->size, d);
-            if (n != 0)
-				return n;
         }
     }
     t->write_lock = 0;

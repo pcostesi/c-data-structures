@@ -268,8 +268,6 @@ int sd_each(sd * t, sd_eachf f, void * d){
     for (i = 0; i < t->buckets_size; i++){
         for (item = t->buckets[i]; !n && item != NULL; item = item->next){
             n = f(item->key, item->val, d);
-            if (n != 0)
-				return n;
         }
     }
     t->write_lock = 0;
