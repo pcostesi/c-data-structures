@@ -126,7 +126,7 @@ static sd * _resize(sd * t){
 	assert(t != NULL);
 	
     sd_pair ** newlist = NULL;
-    float ratio = t->used / t->buckets_size;
+    float ratio = t->used / (float)t->buckets_size;
     size_t newsize = 0;
 
     if ((t->low < ratio && ratio < t->high) || /* between low and high */ \

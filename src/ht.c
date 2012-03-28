@@ -195,7 +195,7 @@ static void _rehash_all(ht * t, kv ** newlist, size_t newsize){
 
 static ht * _resize(ht * t){
     kv ** newlist = NULL;
-    float ratio = t->used / t->buckets_size;
+    float ratio = t->used / (float)t->buckets_size;
     size_t newsize = 0;
 
     if ((t->low < ratio && ratio < t->high) || /* between low and high */ \
